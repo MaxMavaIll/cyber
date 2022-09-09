@@ -22,7 +22,8 @@ def get_index_by_moniker(moniker: str, validators: list):
         current_moniker = val.get("description").get("moniker")
         logging.info(f"{index} - {current_moniker}. Seeking: {moniker}")
         if val.get("description").get("moniker") == moniker:
-            return index
+            return index 
+
 
 
 def get_consensus_pubkey(validator):

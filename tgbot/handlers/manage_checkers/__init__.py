@@ -2,6 +2,7 @@ from . import create_checkers
 from . import list_checkers
 from . import edit_checkers
 from . import delete_checkers
+from . import status
 
 from .router import checker_router
 
@@ -10,5 +11,6 @@ __all__ = [
     'list_checkers',
     'edit_checkers',
     'delete_checkers',
+    'status',
     'checker_router'
 ]

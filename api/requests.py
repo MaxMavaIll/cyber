@@ -1,5 +1,7 @@
 import json
+import logging
 from urllib.parse import urljoin
+
 
 import aiohttp
 

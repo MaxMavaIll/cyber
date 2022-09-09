@@ -77,21 +77,20 @@ async def enter_operator_address(message: Message, state: FSMContext,
                     'You already have this validator in your list'
                 )
         
-        logging.info(f'\n\n\n, {data}, \n\n\n')
+        
 
         data['validators'][i] = {
             'chain': name_node,
-            'operator_address': message.text
+            'operator_address': message.text,
+            'last_time': ""
         }
-        logging.info(f'"\n\n\n", {data}, "\n\n\n"')
-        print("\n\n\n", data, "\n\n\n")
+        
         await message.answer(
             'Nice! Now I\'ll be checking this validator all day👌'
             )
         # await message.send_stiker(message)
 
         await state.set_state(None)
-        logging.info(f'"\n\n\n", {data}, "\n\n\n"')
         await state.update_data(data)
 
         scheduler.add_job(

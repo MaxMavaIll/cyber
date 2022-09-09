@@ -63,11 +63,11 @@ async def parse_application(request: Request, platform: str):
         return {"error": Errors.NoValidators, "ok": False}
 
     moniker_index = get_index_by_moniker(moniker, validators)
-    print(moniker_index)
-    moniker_index += 1
+    
     if not moniker_index:
         return {"error": Errors.NoValidatorWithMoniker, "ok": False}
     moniker_index -= 1
+
     consensus_pubkey = get_consensus_pubkey(validators[moniker_index])
     if not consensus_pubkey:
         return {"error": Errors.NoConsensusPubkey, "ok": False}

@@ -20,3 +20,8 @@ class DeleteChecker(StatesGroup):
 
     chain = State()
     operator_address = State()
+
+class Status(StatesGroup):
+    
+    moniker = State()
+    operator_address = State()
