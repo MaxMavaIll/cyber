@@ -1,10 +1,11 @@
+import asyncio
 import logging
 from datetime import datetime
 
 from name_node import name
 from aiogram.dispatcher.filters import Command
 from aiogram.dispatcher.fsm.context import FSMContext
-from aiogram.types import Message
+from aiogram.types import Message, CallbackQuery
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
@@ -17,11 +18,11 @@ from tgbot.handlers.manage_checkers.router import checker_router
 from tgbot.misc.states import CreateChecker
 
 
-@checker_router.message(Command(commands=['create_checker']))
-async def create_checker(message: Message, state: FSMContext):
+@checker_router.callback_query(text="create")
+async def create_checker(callback : CallbackQuery, state: FSMContext):
     """Entry point for create checker conversation"""
 
-    await message.answer(
+    await callback.message.edit_text(
         'Let\'s see...\n'
         'What\'s your validator name?'
     )
@@ -50,18 +51,18 @@ async def create_checker(message: Message, state: FSMContext):
 
 
 @checker_router.message(state=CreateChecker.operator_address)
-async def enter_operator_address(message: Message, state: FSMContext,
+async def enter_operator_address(callback : CallbackQuery, state: FSMContext,
                                  scheduler: AsyncIOScheduler,
                                  mint_scanner: MintScanner):
     """Enter validator's name"""
-    moniker = message.text
+    moniker = callback.text
     data = await state.get_data()
     name_node = name
     validators = await mint_scanner.get_validators(name_node)
     logging.info(f'Got {len(validators)} validators')
 
     if get_index_by_moniker(moniker, validators) is None:
-        await message.answer(
+        await callback.answer(
             'Sorry, but I don\'t found this validator'
         )
         await state.set_state(None)
@@ -73,10 +74,12 @@ async def enter_operator_address(message: Message, state: FSMContext,
             if validator['operator_address'] == moniker:
                 await state.set_state(None)
 
-                return await message.answer(
+                await callback.message.edit_text(
                     'You already have this validator in your list'
                 )
-        
+                asyncio.sleep(1)
+                await state.set_data(CreateChecker.operator_address)
+                return
         
 
         data['validators'][i] = {
@@ -85,7 +88,7 @@ async def enter_operator_address(message: Message, state: FSMContext,
             'last_time': ""
         }
         
-        await message.answer(
+        await callback.answer(
             'Nice! Now I\'ll be checking this validator all day👌'
             )
         # await message.send_stiker(message)
@@ -97,11 +100,11 @@ async def enter_operator_address(message: Message, state: FSMContext,
             add_user_checker,
             IntervalTrigger(minutes=10),
             kwargs={
-                'user_id': message.from_user.id,
+                'user_id': callback.from_user.id,
                 'platform': name_node,
                 'moniker': moniker,
             },
-            id=f'{message.from_user.id}:{name_node}:{moniker}',
+            id=f'{callback.from_user.id}:{name_node}:{moniker}',
             next_run_time=datetime.now()
         )
 
