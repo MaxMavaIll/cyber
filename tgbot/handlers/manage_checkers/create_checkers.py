@@ -16,7 +16,7 @@ from api.requests import MintScanner
 from schedulers.jobs import add_user_checker
 from tgbot.handlers.manage_checkers.router import checker_router
 from tgbot.misc.states import CreateChecker
-
+from tgbot.keyboards.inline import menu
 
 @checker_router.callback_query(text="create")
 async def create_checker(callback : CallbackQuery, state: FSMContext):
@@ -63,7 +63,8 @@ async def enter_operator_address(callback : CallbackQuery, state: FSMContext,
 
     if get_index_by_moniker(moniker, validators) is None:
         await callback.answer(
-            'Sorry, but I don\'t found this validator'
+            'Sorry, but I don\'t found this validator',
+            show_alert=True
         )
         await state.set_state(None)
     else: 
@@ -77,19 +78,23 @@ async def enter_operator_address(callback : CallbackQuery, state: FSMContext,
                 await callback.message.edit_text(
                     'You already have this validator in your list'
                 )
-                asyncio.sleep(1)
+                asyncio.sleep(1) 
+                await callback.message.edit_text(
+                    '\t<b>Menu</b>',
+                    reply_markup=menu()
+                )
                 await state.set_data(CreateChecker.operator_address)
                 return
         
 
         data['validators'][i] = {
             'chain': name_node,
-            'operator_address': message.text,
+            'operator_address': callback.text,
             'last_time': ""
         }
         
-        await callback.answer(
-            'Nice! Now I\'ll be checking this validator all day👌'
+        await callback.answer( 'Nice! Now I\'ll be checking this validator all day👌',
+            show_alert=True
             )
         # await message.send_stiker(message)
 

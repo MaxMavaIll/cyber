@@ -1,6 +1,8 @@
 from aiogram import Router
 from aiogram.types import Message
 
+from tgbot.keyboards.inline import menu
+
 user_router = Router()
 
 
@@ -13,4 +15,4 @@ async def user_start(message: Message):
                         'You can show your validator checker through /list_checker command.\n'
                         'You can delete your validator checker through /delete_checker command.\n'
                         '\n'
-                        'Hey, if you like this bot, you can delegate funds to the cyberG validator.')
+                        'Hey, if you like this bot, you can delegate funds to the cyberG validator.', reply_markup= menu())
