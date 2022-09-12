@@ -7,7 +7,7 @@ import json
 from name_node import name
 from aiogram.dispatcher.filters import Command
 from aiogram.dispatcher.fsm.context import FSMContext
-from aiogram.types import Message
+from aiogram.types import Message, CallbackQuery
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
@@ -19,6 +19,8 @@ from schedulers.jobs import add_user_checker
 from tgbot.handlers.manage_checkers.router import checker_router
 from tgbot.misc.states import Status
 from tgbot.keyboards.inline import validator_moniker
+from tgbot.keyboards.inline import menu
+
 import os
 from api.config import nodes
 from api.functions import load_block
@@ -27,8 +29,8 @@ from api.functions import load_block
 
 
 
-@checker_router.message(Command(commands=['status']))
-async def create_checker(message: Message, state: FSMContext):
+@checker_router.callback_query(text="status")
+async def create_checker(callback: CallbackQuery, state: FSMContext):
     """Entry point for create checker conversation"""
 
     # data = await state.get_data()
@@ -39,7 +41,7 @@ async def create_checker(message: Message, state: FSMContext):
     #                  for num, validator in validators.items()]
     #     logging.info(f"{all_valid}")
         # await message.answer("Вибири валідатора:", reply_markup=validator_moniker(all_valid).as_markup())
-    await message.answer(
+    await callback.message.edit_text(
     'Let\'s see...\n'
     "The status of which validator do you want to know?"
     )
@@ -70,12 +72,12 @@ async def create_checker(message: Message, state: FSMContext):
 #         )
 
 
-@checker_router.message(state=Status.operator_address)
-async def enter_operator_address(message: Message, state: FSMContext,
+@checker_router.callback_query(state=Status.operator_address)
+async def enter_operator_address(callback: CallbackQuery, state: FSMContext,
                                  scheduler: AsyncIOScheduler,
                                  mint_scanner: MintScanner):
     """Enter validator's name"""
-    moniker = message.text
+    moniker = callback.text
     data = await state.get_data()
     name_node = name
     validators_data = data.get("validators")
@@ -100,18 +102,19 @@ async def enter_operator_address(message: Message, state: FSMContext,
 
 
 
-        await message.answer(
+        await callback.message.edit_text(
             f'status:\n'
             f'    moniker: {validators["description"]["moniker"]}\n'
             f'    Yail: {validators["jailed"]}\n'
             f'    status_validators: {status}\n'
-            f'    bot: 🟢 active '
+            f'    bot: 🟢 active ' 
         )
 
     else:
-        await message.answer('No checkers are currently running.\n'
-                             'You can add checker with /create_checker command'
+        await callback.message.edit_text('No checkers are currently running.\n'
+                             'You can add a checker by selecting create checker in the menu',
         )
+        await callback.message.edit_text("\t<b>MENU</b>", reply_markup=menu())
     #     data.setdefault('validators', {})
     #     i = str( len(data.get('validators')) )
     #     for validator_id, validator in data['validators'].items():

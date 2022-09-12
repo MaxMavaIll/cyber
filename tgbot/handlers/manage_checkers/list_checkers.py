@@ -1,12 +1,12 @@
 from aiogram.dispatcher.filters import Command
 from aiogram.dispatcher.fsm.context import FSMContext
-from aiogram.types import Message
+from aiogram.types import Message, CallbackQuery
 
 from tgbot.handlers.manage_checkers.router import checker_router
+from tgbot.keyboards.inline import menu
 
-
-@checker_router.message(Command(commands=['list_checkers']))
-async def list_my_validators(message: Message, state: FSMContext):
+@checker_router.callback_query(text="list")
+async def list_my_validators(callback: CallbackQuery, state: FSMContext):
     """List all registered validators"""
 
     data = await state.get_data()
@@ -23,4 +23,4 @@ async def list_my_validators(message: Message, state: FSMContext):
         validators_str = 'No checkers are currently running. ' \
                          'You can add checker with /create_checker command'
 
-    await message.answer(validators_str)
+    await callback.answer(validators_str)

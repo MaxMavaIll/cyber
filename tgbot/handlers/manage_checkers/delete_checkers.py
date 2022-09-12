@@ -2,14 +2,14 @@ import logging
 from name_node import name
 from aiogram.dispatcher.filters import Command
 from aiogram.dispatcher.fsm.context import FSMContext
-from aiogram.types import Message
+from aiogram.types import Message, CallbackQuery
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from api.config import nodes
 from api.requests import MintScanner
 from tgbot.handlers.manage_checkers.router import checker_router
 from tgbot.misc.states import DeleteChecker
-
+from tgbot.keyboards.inline import menu, to_menu
 
 def num_data(data, keys_data):
     new_data = dict()
@@ -21,11 +21,11 @@ def num_data(data, keys_data):
     return new_data
 
 
-@checker_router.message(Command(commands=['delete_checker']))
-async def create_checker(message: Message, state: FSMContext):
+@checker_router.callback_query(text="delete")
+async def create_checker(callback: CallbackQuery, state: FSMContext):
     """Entry point for create checker conversation"""
 
-    await message.answer(
+    await callback.message.edit_text(
         'Let\'s see...\n'
         'What\'s your validator\'s name?'
     )
@@ -55,10 +55,10 @@ async def create_checker(message: Message, state: FSMContext):
 
 
 @checker_router.message(state=DeleteChecker.operator_address)
-async def enter_operator_address(message: Message, state: FSMContext,
+async def enter_operator_address(callback: CallbackQuery, state: FSMContext,
                                  scheduler: AsyncIOScheduler):
     """Enter validator's name"""
-    moniker = message.text
+    moniker = callback.text
     data = await state.get_data()
     name_node = name
 
@@ -77,16 +77,18 @@ async def enter_operator_address(message: Message, state: FSMContext,
         logging.info(f"{data}")
         await state.update_data(validators=validators)
 
-        await message.answer(
-            'Okay, I deleted this validator'
+        await callback.message.edit_text(
+            'Okay, I deleted this checker',
+            reply_markup=to_menu()
         )
         scheduler.remove_job(
-            job_id=f'{message.from_user.id}:{name_node}:{moniker}'
+            job_id=f'{callback.from_user.id}:{name_node}:{moniker}'
         )
 
     else:
-        await message.answer(
-            'Sorry, but we didn\'t find this validator\n'
+        await callback.message.edit_text(
+            'Sorry, but we didn\'t find this validator\n',
+            reply_markup=to_menu()
         )
 
     await state.set_state(None)

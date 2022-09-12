@@ -16,7 +16,7 @@ from api.requests import MintScanner
 from schedulers.jobs import add_user_checker
 from tgbot.handlers.manage_checkers.router import checker_router
 from tgbot.misc.states import CreateChecker
-from tgbot.keyboards.inline import menu
+from tgbot.keyboards.inline import menu, to_menu
 
 @checker_router.callback_query(text="create")
 async def create_checker(callback : CallbackQuery, state: FSMContext):
@@ -73,17 +73,13 @@ async def enter_operator_address(callback : CallbackQuery, state: FSMContext,
         i = str( len(data.get('validators')) )
         for validator_id, validator in data['validators'].items():
             if validator['operator_address'] == moniker:
-                await state.set_state(None)
+                
 
                 await callback.message.edit_text(
-                    'You already have this validator in your list'
+                    'You already have this validator in your list',
+                    reply_markup=to_menu()
                 )
-                asyncio.sleep(1) 
-                await callback.message.edit_text(
-                    '\t<b>Menu</b>',
-                    reply_markup=menu()
-                )
-                await state.set_data(CreateChecker.operator_address)
+                
                 return
         
 
@@ -93,8 +89,8 @@ async def enter_operator_address(callback : CallbackQuery, state: FSMContext,
             'last_time': ""
         }
         
-        await callback.answer( 'Nice! Now I\'ll be checking this validator all day👌',
-            show_alert=True
+        await callback.message.edit_text( 'Nice! Now I\'ll be checking this validator all day👌',
+            reply_markup=to_menu()
             )
         # await message.send_stiker(message)
 
