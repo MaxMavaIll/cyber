@@ -19,8 +19,12 @@ async def list_my_validators(callback: CallbackQuery, state: FSMContext):
             for num, validator in enumerate(validators.values(), 1)
         ]
         )
+        await callback.answer(validators_str, show_alert=True)
     else:
-        validators_str = 'No checkers are currently running. ' \
-                         'You can add checker with /create_checker command'
+        await callback.answer(
+            'Sorry, but I didn\'t find any checker. \n'
+            'First, create a checker',
+            # show_alert=True
+        )
 
-    await callback.answer(validators_str)
+    

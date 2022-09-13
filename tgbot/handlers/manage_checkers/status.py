@@ -5,7 +5,7 @@ import asyncio
 import json
 
 from name_node import name
-from aiogram.dispatcher.filters import Command
+from aiogram.dispatcher.filters import Command, Text
 from aiogram.dispatcher.fsm.context import FSMContext
 from aiogram.types import Message, CallbackQuery
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
@@ -19,7 +19,7 @@ from schedulers.jobs import add_user_checker
 from tgbot.handlers.manage_checkers.router import checker_router
 from tgbot.misc.states import Status
 from tgbot.keyboards.inline import validator_moniker
-from tgbot.keyboards.inline import menu
+from tgbot.keyboards.inline import menu, list_validators, to_menu
 
 import os
 from api.config import nodes
@@ -29,27 +29,52 @@ from api.functions import load_block
 
 
 
+# @checker_router.callback_query(text="status")
+# async def create_checker(callback: CallbackQuery, state: FSMContext):
+#     """Entry point for create checker conversation"""
+
+#     # data = await state.get_data()
+#     # validators = data.get('validators')
+
+#     # if validators:
+#     #     all_valid = [validator["operator_address"] 
+#     #                  for num, validator in validators.items()]
+#     #     logging.info(f"{all_valid}")
+#         # await message.answer("Вибири валідатора:", reply_markup=validator_moniker(all_valid).as_markup())
+#     await callback.message.edit_text(
+#     'Let\'s see...\n'
+#     "The status of which validator do you want to know?"
+#     )
+    
+    
 @checker_router.callback_query(text="status")
 async def create_checker(callback: CallbackQuery, state: FSMContext):
     """Entry point for create checker conversation"""
 
-    # data = await state.get_data()
-    # validators = data.get('validators')
+    data = await state.get_data()
+    name_node = name
 
-    # if validators:
-    #     all_valid = [validator["operator_address"] 
-    #                  for num, validator in validators.items()]
-    #     logging.info(f"{all_valid}")
-        # await message.answer("Вибири валідатора:", reply_markup=validator_moniker(all_valid).as_markup())
-    await callback.message.edit_text(
-    'Let\'s see...\n'
-    "The status of which validator do you want to know?"
-    )
+    validators = data.get('validators', {})
+    validators = [f'{validator["operator_address"]}'
+            for num, validator in enumerate(validators.values(), 1)]
+
+    if validators:
+        await callback.message.edit_text(
+            'Let\'s see...\n'
+            "The status of which validator do you want to know?",
+            reply_markup=list_validators(validators, "status")
+        )
+    
+    else:
+        await callback.answer(
+            'Sorry, but I didn\'t find any checker. \n'
+            'First, create a checker',
+            # show_alert=True
+        )
+    
     
 
     
-
-    await state.set_state(Status.operator_address)
 
 
 #
@@ -72,49 +97,43 @@ async def create_checker(callback: CallbackQuery, state: FSMContext):
 #         )
 
 
-@checker_router.callback_query(state=Status.operator_address)
+@checker_router.callback_query(Text(text_startswith="status_"))
 async def enter_operator_address(callback: CallbackQuery, state: FSMContext,
                                  scheduler: AsyncIOScheduler,
                                  mint_scanner: MintScanner):
     """Enter validator's name"""
-    moniker = callback.text
+    moniker = callback.data.split("_")[-1]
     data = await state.get_data()
     name_node = name
     validators_data = data.get("validators")
     # validators = await mint_scanner.get_validator(name_node)
     validators = await mint_scanner.get_validators(name_node) # list validators
     logging.info(f'Got {validators} validators')
-    
-    all_valid_data = [validator["operator_address"] 
-                for num, validator in validators_data.items()]
-    
-    logging.info(f"{all_valid_data}")
+    validator = get_index_by_moniker(moniker, validators) # index validators
+    logging.info(f'Got {validator} {validators[validator]} validators')
+    validators = validators[validator]
 
-    if moniker in all_valid_data :
-        validator = get_index_by_moniker(moniker, validators) # index validators
-        logging.info(f'Got {validator} {validators[validator]} validators')
-        validators = validators[validator]
-
-        if validators["status"] == "BOND_STATUS_BONDED":
-            status = "BONDED"
-        else:
-            status = "UNBONDED"
-
-
-
-        await callback.message.edit_text(
-            f'status:\n'
-            f'    moniker: {validators["description"]["moniker"]}\n'
-            f'    Yail: {validators["jailed"]}\n'
-            f'    status_validators: {status}\n'
-            f'    bot: 🟢 active ' 
-        )
-
+    if validators["status"] == "BOND_STATUS_BONDED":
+        status = "BONDED"
     else:
-        await callback.message.edit_text('No checkers are currently running.\n'
-                             'You can add a checker by selecting create checker in the menu',
-        )
-        await callback.message.edit_text("\t<b>MENU</b>", reply_markup=menu())
+        status = "UNBONDED"
+
+
+
+    await callback.answer(
+        f'status:\n'
+        f'    moniker: {validators["description"]["moniker"]}\n'
+        f'    Yail: {validators["jailed"]}\n'
+        f'    status_validators: {status}\n'
+        f'    bot: 🟢 active ',
+        show_alert=True
+    )
+
+    # else:
+    #     await callback.message.edit_text('No checkers are currently running.\n'
+    #                          'You can add a checker by selecting create checker in the menu',
+    #     )
+        # await callback.message.edit_text("\t<b>MENU</b>", reply_markup=menu())
     #     data.setdefault('validators', {})
     #     i = str( len(data.get('validators')) )
     #     for validator_id, validator in data['validators'].items():

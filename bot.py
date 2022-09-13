@@ -48,6 +48,8 @@ async def main():
         dp.include_router(router)
 
     register_global_middlewares(dp, config)
+    bot.edit_message_text("sdfsdf", chat_id=None)
+    dp['bot'] = bot
     dp['scheduler'] = scheduler
     dp['mint_scanner'] = mint_scanner
 

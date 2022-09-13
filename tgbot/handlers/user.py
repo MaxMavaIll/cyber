@@ -10,7 +10,7 @@ user_router = Router()
 @user_router.message(commands=["start"])
 async def user_start(message: Message):
     # await message.answer_sticker(sticker="sticker/cyberG.webp")
-    await message.reply(f'Hello, {message.chat.first_name}! \n'
+    await message.answer(f'Hello, {message.chat.first_name}! \n'
                         '\n'
                         'You can add validator checker through /create_checker command. \n'
                         ' - This will make me check this validator for missing blocks. \n'
@@ -21,4 +21,4 @@ async def user_start(message: Message):
 
 @user_router.callback_query(text="menu")
 async def Menu(callback: CallbackQuery):
-    await callback.message.edit_text("<center><b>Menu</b></center>", reply_markup=menu())
+    await callback.message.edit_text("<b>Menu</b>", reply_markup=menu())

@@ -26,3 +26,14 @@ def validator_moniker(validator_moniker):
 def to_menu():
     builder = InlineKeyboardBuilder()
     builder.button(text="Menu", callback_data="menu")
+    builder.adjust(1)
+    return builder.as_markup()
+
+def list_validators(validarots: list, func: str):
+    builder = InlineKeyboardBuilder()
+    for num in range(len(validarots)):
+        builder.add( InlineKeyboardButton(text=validarots[num], callback_data=f"{func}_{validarots[num]}") )
+    builder.adjust(4)
+    builder.row(InlineKeyboardButton(text="Menu", callback_data="menu"))
+    
+    return builder.as_markup()
