@@ -9,7 +9,7 @@ def menu():
     builder.button(text="list 📋", callback_data="list")
     builder.button(text="delete checker 🗑", callback_data="delete")
     builder.button(text="status", callback_data="status")
-    builder.button(text="gov", callback_data="gov")
+#    builder.button(text="gov", callback_data="gov")
     builder.adjust(2)
 
     return builder.as_markup()
