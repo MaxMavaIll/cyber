@@ -97,7 +97,7 @@ async def add_user_checker(bot: Bot, mint_scanner: MintScanner, user_id: int, pl
     elif percentages > (skipped_blocks_allowed * 0.7):
         await bot.send_message(user_id, f"<b>Moniker: {moniker}.</b>"
                                f"\nbot: "
-                               f"\nmissed_blocks: {percentages/skipped_blocks_allowed}"
+                               f"\nmissed_blocks: {percentages}/{skipped_blocks_allowed}"
                                f"\ntime_before_jail: { two_zero( math.floor(time_to_jail / 60) ) }:{ two_zero( time_to_jail % 60 ) }"
                                f"\n <b>If you don't fix it, your validator will go to jail.</b>")
 
@@ -106,7 +106,7 @@ async def add_user_checker(bot: Bot, mint_scanner: MintScanner, user_id: int, pl
     else:
         await bot.send_message(user_id, f"<b>Moniker: {moniker}.</b>"
                                f"\nbot: "
-                               f"\nmissed_blocks: {percentages/skipped_blocks_allowed}"
+                               f"\nmissed_blocks: {percentages}/{skipped_blocks_allowed}"
                                f"\ntime_before_jail: { two_zero( math.floor(time_to_jail / 60) ) }:{ two_zero( time_to_jail % 60 ) }")
 
         await storage.redis.set('checkers', json.dumps(checkers))
