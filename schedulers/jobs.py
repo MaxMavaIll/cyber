@@ -6,7 +6,7 @@ import math
 
 from aiogram import Bot
 from aiogram.dispatcher.fsm.storage.redis import RedisStorage
-#from aiogram.dispatcher.fsm.context import FSMContext
+
 
 from api.requests import MintScanner
 from schedulers.exceptions import NoSlashingInfo, raise_error
@@ -29,7 +29,7 @@ def two_zero(integer):
 
 
 async def add_user_checker(bot: Bot, mint_scanner: MintScanner, user_id: int, platform: str, moniker: str,
-                           storage: RedisStorage, state: FSMContext):
+                           storage: RedisStorage):
 
     async def check_block(old_new, new):
         if old_new >= 29:
