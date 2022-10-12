@@ -6,7 +6,7 @@ import math
 
 from aiogram import Bot
 from aiogram.dispatcher.fsm.storage.redis import RedisStorage
-from aiogram.dispatcher.fsm.context import FSMContext
+#from aiogram.dispatcher.fsm.context import FSMContext
 
 from api.requests import MintScanner
 from schedulers.exceptions import NoSlashingInfo, raise_error
