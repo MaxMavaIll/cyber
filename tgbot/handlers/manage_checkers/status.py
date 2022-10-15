@@ -113,19 +113,23 @@ async def enter_operator_address(callback: CallbackQuery, state: FSMContext,
     logging.info(f'Got {validator} {validators[validator]} validators')
     validators = validators[validator]
 
-    if validators["status"] == "BOND_STATUS_BONDED":
-        status = "BONDED"
+    if validators["jailed"]:
+        validators["jailed"] = '🔴 true'
     else:
-        status = "UNBONDED"
+        validators["jailed"] = '🟢 false'
+
+    if validators["status"] == "BOND_STATUS_BONDED":
+        status = "🟢 BONDED"
+    else:
+        status = "🔴 UNBONDED"
 
 
 
     await callback.answer(
-        f'status:\n'
-        f'    moniker: {validators["description"]["moniker"]}\n'
-        f'    Yail: {validators["jailed"]}\n'
-        f'    status_validators: {status}\n'
-        f'    bot: 🟢 active ',
+        f'status: '
+        f'\n    moniker: {validators["description"]["moniker"]}'
+        f'\n    Jailed:  {validators["jailed"]}'
+        f'\n    validators status: {status}',
         show_alert=True
     )
 
