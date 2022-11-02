@@ -13,6 +13,12 @@ from tgbot.handlers.user import user_router
 from tgbot.middlewares.config import ConfigMiddleware
 from tgbot.services import broadcaster
 
+
+from schedulers.jobs import add_user_checker
+from apscheduler.triggers.interval import IntervalTrigger
+from datetime import datetime
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -52,9 +58,23 @@ async def main():
     dp['bot'] = bot
     dp['scheduler'] = scheduler
     dp['mint_scanner'] = mint_scanner
+    
+    
+
 
     await on_startup(bot, config.tg_bot.admin_ids)
     scheduler.start()
+    
+    scheduler.add_job(
+            add_user_checker,
+            IntervalTrigger(minutes=10),
+            # kwargs={
+            #     'user_id': message.from_user.id,
+            #     'platform': name_node,
+            #     'moniker': moniker,
+            # },
+            next_run_time=datetime.now()
+        )
 
     await dp.start_polling(bot)
 

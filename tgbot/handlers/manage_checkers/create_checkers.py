@@ -1,5 +1,5 @@
 import asyncio
-import logging
+import logging, json
 from datetime import datetime
 
 from name_node import name
@@ -10,6 +10,8 @@ from aiogram.types import Message, CallbackQuery
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
+
+
 
 from api.config import nodes
 from api.functions import get_index_by_moniker
@@ -65,6 +67,7 @@ async def enter_operator_address(message : Message, state: FSMContext,
     moniker = message.text
     data = await state.get_data()
     name_node = name
+    logging.info(f"\n\n{data}\n")
     validators = await mint_scanner.get_validators(name_node)
     logging.info(f'Got {len(validators)} validators')
     logging.info(f'Got {id_message} validators')
@@ -80,7 +83,6 @@ async def enter_operator_address(message : Message, state: FSMContext,
     else: 
 
         data.setdefault('validators', {})
-        i = str( len(data.get('validators')) )
         for validator_id, validator in data['validators'].items():
             if validator['operator_address'] == moniker:
                 
@@ -92,8 +94,16 @@ async def enter_operator_address(message : Message, state: FSMContext,
                 )
                 
                 return
-        
+        logging.info(f"\n\n{data}\n")
 
+        i = str( len(data.get('validators')) )
+        # if data.get("validators") != {}:
+        #     data['validators'][i] = {
+        #         'chain': name_node,
+        #         'operator_address': message.text,
+        #         'last_time': ""
+        #     }
+        # else:
         data['validators'][i] = {
             'chain': name_node,
             'operator_address': message.text,
@@ -111,6 +121,17 @@ async def enter_operator_address(message : Message, state: FSMContext,
             id=f'{message.from_user.id}:{name_node}:{moniker}',
             next_run_time=datetime.now()
         )
+        with open("cache/data.json", "r") as file:
+            data_send = json.load(file)
+
+        if str(message.from_user.id) not in data_send.keys():
+            data_send[str(message.from_user.id)]=[]
+
+        data_send[str(message.from_user.id)].append(moniker)
+        
+        with open("cache/data.json", "w") as file:
+            json.dump( data_send, file)
+
         await state.set_state(None)
         await state.update_data(data)
         await bot.edit_message_text( 
