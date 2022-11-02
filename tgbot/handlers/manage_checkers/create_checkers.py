@@ -110,17 +110,7 @@ async def enter_operator_address(message : Message, state: FSMContext,
             'last_time': ""
         }
         
-        scheduler.add_job(
-            add_user_checker,
-            IntervalTrigger(minutes=10),
-            kwargs={
-                'user_id': message.from_user.id,
-                'platform': name_node,
-                'moniker': moniker,
-            },
-            id=f'{message.from_user.id}:{name_node}:{moniker}',
-            next_run_time=datetime.now()
-        )
+        
         with open("cache/data.json", "r") as file:
             data_send = json.load(file)
 
