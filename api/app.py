@@ -4,7 +4,7 @@ from fastapi import FastAPI, Request
 from errors import Errors
 from config import API_TOKEN, nodes
 from functions import load_block, get_index_by_moniker, get_consensus_pubkey, slashing_signing_info, \
-    get_missed_block_counter
+    get_missed_block_counter, slashing_signing_infos
 
 app = FastAPI()
 
@@ -79,7 +79,7 @@ async def parse_application(request: Request, platform: str):
     else:
         return {
             'ok': True, 'missed_blocks_counter': get_missed_block_counter(slashing_info),
-            'data': {'consensus_pubkey': consensus_pubkey}
+            'data': {'consensus_pubkey': consensus_pubkey, 'validators': validators}
         }
 
 
@@ -101,8 +101,32 @@ async def repeat_missed_block_counter(request: Request):
     slashing_info = await slashing_signing_info(parsing_application, consensus_pubkey, url)
     if not slashing_info:
         return {"error": "No slashing info", "ok": False}
-    missed_block_counter = get_missed_block_counter(slashing_info)
-    if missed_block_counter is not None:
-        return {'ok': True, 'missed_blocks_counter': missed_block_counter}
+    # missed_block_counter = get_missed_block_counter(slashing_info)
+    if slashing_info is not None:
+        return {'ok': True, 'missed_blocks_counter': slashing_info}
     else:
-        return {'error': 'No missed blocks', 'missed_blocks_counter': 0, "ok": False}
+        return {'error': 'No missed blocks', 'missed_blocks_counter': slashing_info, "ok": False}
+
+@app.post('/repeat/missed_block_counters')
+async def repeat_missed_block_counter(request: Request):
+    data = await request.json()
+    if not data:
+        return {"error": "No data"}
+    token = data.get("token")
+    platform = data.get("platform")
+    consensus_pubkey = data.get("consensus_pubkey")
+    if token != API_TOKEN:
+        return {"error": "Invalid token", "ok": False}
+
+    parsing_application, url = nodes.get(platform, [None, None])
+    if not parsing_application:
+        return {"error": "platform does not exist", "ok": False}
+
+    slashing_info = await slashing_signing_infos(parsing_application, url)
+    if not slashing_info:
+        return {"error": "No slashing info", "ok": False}
+    # missed_block_counter = get_missed_block_counter(slashing_info)
+    if slashing_info is not None:
+        return {'ok': True, 'missed_blocks_counters': slashing_info}
+    else:
+        return {'error': 'No missed blocks', 'missed_blocks_counter': slashing_info, "ok": False}

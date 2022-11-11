@@ -33,7 +33,7 @@ def register_global_middlewares(dp: Dispatcher, config):
 
 async def main():
     logging.basicConfig(
-        level=logging.INFO,
+        level=logging.DEBUG,
         format=u'%(filename)s:%(lineno)d #%(levelname)-8s [%(asctime)s] - %(name)s - %(message)s',
     )
     logger.info("Starting bot")
@@ -58,6 +58,8 @@ async def main():
     dp['bot'] = bot
     dp['scheduler'] = scheduler
     dp['mint_scanner'] = mint_scanner
+    dp['storage'] = storage
+
     
     
 
@@ -73,7 +75,8 @@ async def main():
             #     'platform': name_node,
             #     'moniker': moniker,
             # },
-            next_run_time=datetime.now()
+            next_run_time=datetime.now(),
+            replace_existing=True
         )
 
     await dp.start_polling(bot)

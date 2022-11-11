@@ -32,7 +32,7 @@ def to_menu():
 def list_validators(validarots: list, func: str):
     builder = InlineKeyboardBuilder()
     for num in range(len(validarots)):
-        builder.add( InlineKeyboardButton(text=validarots[num], callback_data=f"{func}_{validarots[num]}") )
+        builder.add( InlineKeyboardButton(text=validarots[num], callback_data=f"{func}^{validarots[num]}") )
     builder.adjust(4)
     builder.row(InlineKeyboardButton(text="Menu", callback_data="menu"))
     

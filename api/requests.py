@@ -23,13 +23,22 @@ class MintScanner:
 
         return response
 
-    async def get_repeated_missing_blocks(self, platform: str, consensus_pubkey: str):
+    async def get_repeated_missing_block(self, platform: str, consensus_pubkey: str):
         data = {
             "token": self.api_token,
             "platform": platform,
             "consensus_pubkey": consensus_pubkey,
         }
         response = await self._post('repeat', 'missed_block_counter', json=data)
+        return response
+
+    async def get_repeated_missing_blocks(self, platform: str, consensus_pubkey: str):
+        data = {
+            "token": self.api_token,
+            "platform": platform,
+            "consensus_pubkey": consensus_pubkey,
+        }
+        response = await self._post('repeat', 'missed_block_counters', json=data)
         return response
 
     async def get_validators(self, platform: str):

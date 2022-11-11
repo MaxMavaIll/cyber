@@ -102,7 +102,7 @@ async def enter_operator_address(callback: CallbackQuery, state: FSMContext,
                                  scheduler: AsyncIOScheduler,
                                  mint_scanner: MintScanner):
     """Enter validator's name"""
-    moniker = callback.data.split("_")[-1]
+    moniker = callback.data.split("^")[-1]
     data = await state.get_data()
     name_node = name
     validators_data = data.get("validators")
