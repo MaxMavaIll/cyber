@@ -128,11 +128,6 @@ async def enter_operator_address(callback: CallbackQuery, state: FSMContext,
     else:
         status = "🔴 UNBONDED"
 
-    if missed_blocks_counter > 0:
-        missed_blocks_counter = colored(str(missed_blocks_counter), 'red')
-
-    logging.info(f'missed_blocks_counter {missed_blocks_counter}')
-
     await callback.answer(
         f'status: '
         f'\n    moniker: {validators["description"]["moniker"]}'
