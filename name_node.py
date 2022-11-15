@@ -1,3 +1,6 @@
+
+chains = {'Mainnet': {'juno': {'bin': '/root/go/bin/junod', 'node': ['https://juno-rpc.polkachu.com:443']}}, 'Testnet': {}}
+
 name = "juno"
 min_signed_per_window = 5
 signed_blocks_window = 10000

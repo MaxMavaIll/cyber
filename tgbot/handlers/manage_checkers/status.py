@@ -77,25 +77,6 @@ async def create_checker(callback: CallbackQuery, state: FSMContext):
     
 
 
-#
-# @checker_router.message(state=CreateChecker.chain)
-# async def enter_chain(message: Message, state: FSMContext):
-#     """Enter chain name"""
-#     data = await state.get_data()
-#     if message.text in nodes.keys():
-#         data['chain'] = message.text
-#
-#         await message.answer(
-#             'Okay, now I need the name of this validator'
-#         )
-#         await state.set_state(CreateChecker.operator_address)
-#         await state.update_data(data)
-#     else:
-#         await message.answer(
-#             'Sorry, but we dont have this validator\'s network\n'
-#             'Try again'
-#         )
-
 
 @checker_router.callback_query(Text(text_startswith="status&"))
 async def enter_operator_address(callback: CallbackQuery, state: FSMContext,
@@ -108,7 +89,7 @@ async def enter_operator_address(callback: CallbackQuery, state: FSMContext,
     validators_data = data.get("validators")
     # validators = await mint_scanner.get_validator(name_node)
     validators = await mint_scanner.get_validators(name_node) # list validators
-    logging.error(f'Got {validators} validators')
+    # logging.error(f'Got {validators} validators')
     validator = get_index_by_moniker(moniker, validators) # index validators
     logging.info(f'Got {validator} {validators[validator]} validators')
     validators = validators[validator]
