@@ -132,48 +132,4 @@ async def enter_operator_address(callback: CallbackQuery, state: FSMContext,
     await storage.redis.set('checkers', json.dumps(checkers))
 
 
-# @checker_router.message(state=DeleteChecker.operator_address)
-# async def enter_operator_address(message: Message, state: FSMContext,
-#                                  scheduler: AsyncIOScheduler, bot: Bot):
-#     """Enter validator's name"""
-#     moniker = message.text
-#     data = await state.get_data()
-#     name_node = name
 
-#     validators = data.get('validators', {})
-#     validator_to_delete = None
-
-#     for validator_id, validator in validators.items():
-#         if validator.get('chain') == name_node and validator.get('operator_address') == moniker:
-#             validator_to_delete = validator_id
-#             break
-
-#     if validator_to_delete:
-#         validators.pop(validator_to_delete)
-#         logging.info(f"{data}")
-#         validators = num_data(validators, validators.keys())
-#         logging.info(f"{data}")
-#         await state.update_data(validators=validators)
-
-#         await bot.edit_message_text(
-#             'Sorry, but I don\'t found this validator', chat_id=message.from_user.id,
-#             message_id=id_message[message.from_user.id],
-#             reply_markup=to_menu()
-#         )
-
-#         await bot.edit_message_text(
-#             'Okay, I deleted this checker', chat_id=message.from_user.id,
-#             message_id=id_message[message.from_user.id],
-#             reply_markup=to_menu()
-#         )
-#         scheduler.remove_job(
-#             job_id=f'{message.from_user.id}:{name_node}:{moniker}'
-#         )
-
-#     else:
-#         await bot.edit_message_text(
-#             'Sorry, but we didn\'t find this validator\n',
-#             reply_markup=to_menu()
-#         )
-
-#     await state.set_state(None)
