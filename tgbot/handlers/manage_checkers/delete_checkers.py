@@ -87,22 +87,21 @@ async def create_checker(callback: CallbackQuery, state: FSMContext):
 #             'Try again'
 #         )
 
-@checker_router.callback_query(Text(text_startswith="delete_"))
+@checker_router.callback_query(Text(text_startswith="delete&"))
 async def enter_operator_address(callback: CallbackQuery, state: FSMContext,
                                  scheduler: AsyncIOScheduler, bot: Bot, storage: RedisStorage):
     """Enter validator's name"""
 
-    moniker = callback.data.split("^")[-1]
+    moniker = callback.data.split("&")[-1]
     data = await state.get_data()
     checkers = await storage.redis.get('checkers') or '{}'
     checkers = json.loads(checkers)
-    logging.debug(f"checkers {checkers}\n \
-                data {data}")
-
-
-    moniker = callback.data.split("_")[-1]
-    data = await state.get_data()
     name_node = name
+    logging.debug(f"checkers {checkers} \ndata {data} \nmoniker {moniker} \nname_node {name} ")
+
+
+   
+   
 
     validators = data.get('validators', {})
     validator_to_delete = None
@@ -118,64 +117,17 @@ async def enter_operator_address(callback: CallbackQuery, state: FSMContext,
     
     
     validators = num_data(validators, validators.keys())
-    await state.update_data(validators=validators)
 
     await callback.message.edit_text(
         f'Okay, I deleted this checker : {moniker}',
         reply_markup=to_menu()
     )
-    scheduler.remove_job(
-        job_id=f'{callback.from_user.id}:{name_node}:{moniker}'
-    )
+
 
     
-
+    logging.debug(f"checkers {checkers} \ndata {data} \nmoniker {moniker} \nname_node {name} ")
+    await state.update_data(validators=validators)
     await state.set_state(None)
     await storage.redis.set('checkers', json.dumps(checkers))
 
 
-# @checker_router.message(state=DeleteChecker.operator_address)
-# async def enter_operator_address(message: Message, state: FSMContext,
-#                                  scheduler: AsyncIOScheduler, bot: Bot):
-#     """Enter validator's name"""
-#     moniker = message.text
-#     data = await state.get_data()
-#     name_node = name
-
-#     validators = data.get('validators', {})
-#     validator_to_delete = None
-
-#     for validator_id, validator in validators.items():
-#         if validator.get('chain') == name_node and validator.get('operator_address') == moniker:
-#             validator_to_delete = validator_id
-#             break
-
-#     if validator_to_delete:
-#         validators.pop(validator_to_delete)
-#         logging.info(f"{data}")
-#         validators = num_data(validators, validators.keys())
-#         logging.info(f"{data}")
-#         await state.update_data(validators=validators)
-
-#         await bot.edit_message_text(
-#             'Sorry, but I don\'t found this validator', chat_id=message.from_user.id,
-#             message_id=id_message[message.from_user.id],
-#             reply_markup=to_menu()
-#         )
-
-#         await bot.edit_message_text(
-#             'Okay, I deleted this checker', chat_id=message.from_user.id,
-#             message_id=id_message[message.from_user.id],
-#             reply_markup=to_menu()
-#         )
-#         scheduler.remove_job(
-#             job_id=f'{message.from_user.id}:{name_node}:{moniker}'
-#         )
-
-#     else:
-#         await bot.edit_message_text(
-#             'Sorry, but we didn\'t find this validator\n',
-#             reply_markup=to_menu()
-#         )
-
-#     await state.set_state(None)

@@ -28,118 +28,27 @@ def two_zero(integer):
         return integer
 
 
-# async def add_user_checker(bot: Bot, mint_scanner: MintScanner, #user_id: int, platform: str, moniker: str,
-#                            storage: RedisStorage):
-
-#     async def check_block(old_new, new):
-#         if old_new >= 29:
-#             return 1
-#         else:
-#             #checkers[str(user_id)][platform][moniker]['last_check'] = new
-#             return 0
-
-#     async def check(old, new):
-#         right_blocks = await check_block(new - old, new)
-#         if right_blocks:
-#             old = checkers[str(user_id)][platform][moniker]['last_check']
-#             rizn = new - old
-#             vidsot_skip_blok = (100 * new) / skipped_blocks_allowed
-#             vidsot_time_to_jail = (
-#                 ((100 - vidsot_skip_blok) * time_jail) / 100) / 60
-#             # return right_blocks, round(vidsot_skip_blok, 2), round(vidsot_time_to_jail)
-#             return right_blocks, new, round(vidsot_time_to_jail)
-#         else:
-#             return 0, 0, 0
-
-    
 
 
-#     checkers = await storage.redis.get('checkers') or '{}'
-#     checkers = json.loads(checkers)
-#     logging.info(f"\n\n{checkers}\n\n")
-    # if str(user_id) not in checkers:
-    #     checkers[str(user_id)] = {}
-
-    # # if platform not in checkers[str(user_id)]:
-    # #     checkers[str(user_id)][platform] = {}
-
-    # if moniker not in checkers[str(user_id)]:
-    #     checkers[str(user_id)][moniker] = {
-    #         'last_check': 0,
-    #     }
-
-#     last_check = checkers[str(user_id)].get(moniker, {}).get('last_check', 0)
-
-#     data = await mint_scanner.parse_application(platform, moniker)
-
-#     if not data['ok']:
-#         await bot.send_message(ADMIN_ID, "Error happened: " + data['error'] + "\n\n" + f'{moniker=}, {platform=}')
-#         raise raise_error(data['error'])
-
-#     missed_blocks_counter = data['missed_blocks_counter']
-#     consensus_pubkey = data['data']['consensus_pubkey']
-
-#     logging.info(f"Missed blocks counter: {missed_blocks_counter}")
-#     logging.info('Sleeping for 180 seconds')
-
-#     await asyncio.sleep(180)
-#     data_new = await mint_scanner.get_repeated_missing_blocks(platform, consensus_pubkey)
-
-#     missed_blocks_counter_new = data_new['missed_blocks_counter']
-#     logging.info(f"Second missed blocks counter: {missed_blocks_counter_new}")
-
-#     missed_blocks_counter_new, percentages, time_to_jail = await check(missed_blocks_counter, missed_blocks_counter_new)
-
-#     if not missed_blocks_counter_new:
-#         await storage.redis.set('checkers', json.dumps(checkers))
-#         return
-
-#     elif percentages > (skipped_blocks_allowed * 0.7):
-#         await bot.send_message(user_id, f"<b>Moniker: {moniker}.</b>"
-#                                f"\nbot: <b>If you don't fix it, your validator will go to jail.</b>"
-#                                f"\n    missed_blocks: {percentages}/{skipped_blocks_allowed}"
-#                                f"\n    time_before_jail: { two_zero( math.floor(time_to_jail / 60) ) }:{ two_zero( time_to_jail % 60 ) }"
-#                                )
-
-#         await storage.redis.set('checkers', json.dumps(checkers))
-
-#     else:
-#         await bot.send_message(user_id, f"<b>Moniker: {moniker}.</b>"
-#                                f"\nbot: "
-#                                f"\n.   missed_blocks: {percentages}/{skipped_blocks_allowed}"
-#                                f"\n    time_before_jail: { two_zero( math.floor(time_to_jail / 60) ) }:{ two_zero( time_to_jail % 60 ) }")
-
-#         await storage.redis.set('checkers', json.dumps(checkers))
-
-    #checkers[str(user_id)][platform][moniker]['last_check'] = missed_blocks_counter_new
-    # await storage.redis.set('checkers', json.dumps(checkers))
-
-
-async def check_val_new():
-    pass
 
 
 async def sends_message_client(bot: list, user_id: int | str, moniker: str, 
                 percentages: int , skipped_blocks_allowed: int, time_to_jail: int, missed_blocks_counter_new: int):
 
                 if not missed_blocks_counter_new:
-                    await bot.send_message(user_id, f"<b>Moniker: {moniker}.</b>"
-                                            "all good")
+        
                     return
-                    
+
                 elif percentages > (skipped_blocks_allowed * 0.7):
                     await bot.send_message(user_id, f"<b>Moniker: {moniker}.</b>"
-                                        f"\nbot: <b>If you don't fix it, your validator will go to jail.</b>"
-                                        f"\n    missed_blocks: {percentages}/{skipped_blocks_allowed}"
-                                        f"\n    time_before_jail: { two_zero( math.floor(time_to_jail / 60) ) }:{ two_zero( time_to_jail % 60 ) }"
-                                        )
+                                        f"\n<b>I've just found {percentages} missed blocks out of {skipped_blocks_allowed} total.</b>"
+                                        f"\n<b>You have ~{ two_zero( math.floor(time_to_jail / 60) ) }:{ two_zero( time_to_jail % 60 ) } hours before jailing.</b>"
+                                        f"\n <b>If you don't fix it, your validator will go to jail.</b>")
 
                 else:
                     await bot.send_message(user_id, f"<b>Moniker: {moniker}.</b>"
-                                        f"\nbot: "
-                                        f"\n.   missed_blocks: {percentages}/{skipped_blocks_allowed}"
-                                        f"\n    time_before_jail: { two_zero( math.floor(time_to_jail / 60) ) }:{ two_zero( time_to_jail % 60 ) }")
-                logging.info("Я закінчив роз силку miss")
+                                        f"\nI've just found {percentages} missed blocks out of {skipped_blocks_allowed} total."
+                                        f"\nYou have ~ { two_zero( math.floor(time_to_jail / 60) ) }:{ two_zero( time_to_jail % 60 ) } hours before jailing.")
 
 async def add_user_checker(bot: Bot, mint_scanner: MintScanner, #user_id: int, platform: str, moniker: str,
                            storage: RedisStorage):

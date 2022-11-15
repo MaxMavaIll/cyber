@@ -3,6 +3,7 @@ from datetime import datetime
 from socket import EAI_SERVICE
 import asyncio
 import json
+from termcolor import colored
 
 from name_node import name
 from aiogram.dispatcher.filters import Command, Text
@@ -97,19 +98,23 @@ async def create_checker(callback: CallbackQuery, state: FSMContext):
 #         )
 
 
-@checker_router.callback_query(Text(text_startswith="status_"))
+@checker_router.callback_query(Text(text_startswith="status&"))
 async def enter_operator_address(callback: CallbackQuery, state: FSMContext,
                                  scheduler: AsyncIOScheduler,
                                  mint_scanner: MintScanner):
     """Enter validator's name"""
-    moniker = callback.data.split("^")[-1]
+    moniker = callback.data.split("&")[-1]
     data = await state.get_data()
     name_node = name
     validators_data = data.get("validators")
+
+
     # validators = await mint_scanner.get_validator(name_node)
     validators = await mint_scanner.get_validators(name_node) # list validators
-    logging.info(f'Got {validators} validators')
     validator = get_index_by_moniker(moniker, validators) # index validators
+    data_new = await mint_scanner.parse_application(name, moniker)
+    logging.info(data_new['missed_blocks_counter'])
+    missed_blocks_counter = int(data_new['missed_blocks_counter'])
     logging.info(f'Got {validator} {validators[validator]} validators')
     validators = validators[validator]
 
@@ -123,57 +128,17 @@ async def enter_operator_address(callback: CallbackQuery, state: FSMContext,
     else:
         status = "🔴 UNBONDED"
 
+    if missed_blocks_counter > 0:
+        missed_blocks_counter = colored(str(missed_blocks_counter), 'red')
 
+    logging.info(f'missed_blocks_counter {missed_blocks_counter}')
 
     await callback.answer(
         f'status: '
         f'\n    moniker: {validators["description"]["moniker"]}'
+        f'\n    VOTING POWER: {validators["tokens"]}'
         f'\n    Jailed:  {validators["jailed"]}'
-        f'\n    validators status: {status}',
-        show_alert=True
+        f'\n    validators status: {status}'
+        f'\n    missed blocks: {missed_blocks_counter}',
+        show_alert=True, 
     )
-
-    # else:
-    #     await callback.message.edit_text('No checkers are currently running.\n'
-    #                          'You can add a checker by selecting create checker in the menu',
-    #     )
-        # await callback.message.edit_text("\t<b>MENU</b>", reply_markup=menu())
-    #     data.setdefault('validators', {})
-    #     i = str( len(data.get('validators')) )
-    #     for validator_id, validator in data['validators'].items():
-    #         if validator['operator_address'] == moniker:
-    #             await state.set_state(None)
-
-    #             return await message.answer(
-    #                 'You already have this validator in your list'
-    #             )
-        
-    #     logging.info(f'\n\n\n, {data}, \n\n\n')
-
-    #     data['validators'][i] = {
-    #         'chain': name_node,
-    #         'operator_address': message.text
-    #     }
-    #     logging.info(f'"\n\n\n", {data}, "\n\n\n"')
-    #     print("\n\n\n", data, "\n\n\n")
-    #     await message.answer(
-    #         'Nice! Now I\'ll be checking this validator all day👌'
-    #         )
-    #     # await message.send_stiker(message)
-
-    #     await state.set_state(None)
-    #     logging.info(f'"\n\n\n", {data}, "\n\n\n"')
-    #     await state.update_data(data)
-
-    #     scheduler.add_job(
-    #         add_user_checker,
-    #         IntervalTrigger(minutes=10),
-    #         kwargs={
-    #             'user_id': message.from_user.id,
-    #             'platform': name_node,
-    #             'moniker': moniker,
-    #         },
-    #         id=f'{message.from_user.id}:{name_node}:{moniker}',
-    #         next_run_time=datetime.now()
-    #     )
-

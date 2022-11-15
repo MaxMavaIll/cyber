@@ -7,4 +7,5 @@ environs==9.5.0
 apscheduler==3.9.1
 apscheduler_di
 tzlocal==4.2
+termcolor==2.1.0
 redis
