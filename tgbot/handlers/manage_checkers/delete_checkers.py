@@ -87,22 +87,19 @@ async def create_checker(callback: CallbackQuery, state: FSMContext):
 #             'Try again'
 #         )
 
-@checker_router.callback_query(Text(text_startswith="delete_"))
+@checker_router.callback_query(Text(text_startswith="delete&"))
 async def enter_operator_address(callback: CallbackQuery, state: FSMContext,
                                  scheduler: AsyncIOScheduler, bot: Bot, storage: RedisStorage):
     """Enter validator's name"""
 
-    moniker = callback.data.split("^")[-1]
+   
+    moniker = callback.data.split("&")[-1]
     data = await state.get_data()
     checkers = await storage.redis.get('checkers') or '{}'
     checkers = json.loads(checkers)
-    logging.debug(f"checkers {checkers}\n \
-                data {data}")
-
-
-    moniker = callback.data.split("_")[-1]
-    data = await state.get_data()
     name_node = name
+    logging.debug(f"checkers {checkers} \ndata {data} \n{moniker} \n{name_node}")
+
 
     validators = data.get('validators', {})
     validator_to_delete = None
@@ -118,18 +115,19 @@ async def enter_operator_address(callback: CallbackQuery, state: FSMContext,
     
     
     validators = num_data(validators, validators.keys())
-    await state.update_data(validators=validators)
+    
 
     await callback.message.edit_text(
         f'Okay, I deleted this checker : {moniker}',
         reply_markup=to_menu()
     )
-    scheduler.remove_job(
-        job_id=f'{callback.from_user.id}:{name_node}:{moniker}'
-    )
+    # scheduler.remove_job(
+    #     job_id=f'{callback.from_user.id}:{name_node}:{moniker}'
+    # )
 
     
-
+    logging.debug(f"{checkers}\n{data}")
+    await state.update_data(validators=validators)
     await state.set_state(None)
     await storage.redis.set('checkers', json.dumps(checkers))
 

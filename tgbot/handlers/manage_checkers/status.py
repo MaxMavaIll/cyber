@@ -97,18 +97,18 @@ async def create_checker(callback: CallbackQuery, state: FSMContext):
 #         )
 
 
-@checker_router.callback_query(Text(text_startswith="status_"))
+@checker_router.callback_query(Text(text_startswith="status&"))
 async def enter_operator_address(callback: CallbackQuery, state: FSMContext,
                                  scheduler: AsyncIOScheduler,
                                  mint_scanner: MintScanner):
     """Enter validator's name"""
-    moniker = callback.data.split("^")[-1]
+    moniker = callback.data.split("&")[-1]
     data = await state.get_data()
     name_node = name
     validators_data = data.get("validators")
     # validators = await mint_scanner.get_validator(name_node)
     validators = await mint_scanner.get_validators(name_node) # list validators
-    logging.info(f'Got {validators} validators')
+    logging.error(f'Got {validators} validators')
     validator = get_index_by_moniker(moniker, validators) # index validators
     logging.info(f'Got {validator} {validators[validator]} validators')
     validators = validators[validator]
@@ -131,6 +131,7 @@ async def enter_operator_address(callback: CallbackQuery, state: FSMContext,
         f'\n    Jailed:  {validators["jailed"]}'
         f'\n    validators status: {status}',
         show_alert=True
+        
     )
 
     # else:

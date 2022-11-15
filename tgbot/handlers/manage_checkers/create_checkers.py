@@ -125,7 +125,7 @@ async def enter_operator_address(message : Message, state: FSMContext,
             checkers['validators'][str(message.from_user.id)][message.text] = {
                 'last_check': 0, 'addr_cons': None
             }
-            logging.debug(checkers)
+            
             
 
 
@@ -160,7 +160,7 @@ async def enter_operator_address(message : Message, state: FSMContext,
             message_id=id_message,
             reply_markup=to_menu()
             )
-        logging.info(f'{checkers} {data}')
+        logging.debug(f'{checkers} {data}')
         await state.set_state(None)
         await state.update_data(data)
         await storage.redis.set('checkers', json.dumps(checkers))
