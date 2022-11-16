@@ -64,7 +64,9 @@ async def parse_application(request: Request, platform: str):
 
     moniker_index = get_index_by_moniker(moniker, validators)
     
-    moniker_index += 1
+    if moniker_index != None:
+        moniker_index += 1
+        
     if not moniker_index:
         return {"error": Errors.NoValidatorWithMoniker, "ok": False}
     moniker_index -= 1

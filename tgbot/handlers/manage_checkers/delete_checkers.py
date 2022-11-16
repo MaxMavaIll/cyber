@@ -1,5 +1,5 @@
 import logging, json
-from name_node import name
+
 from aiogram import Bot
 from aiogram.dispatcher.filters import Command, Text
 from aiogram.dispatcher.fsm.context import FSMContext
@@ -7,6 +7,7 @@ from aiogram.types import Message, CallbackQuery
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from aiogram.dispatcher.fsm.storage.redis import RedisStorage
 
+from api.functions import get_index_by_network
 
 from api.config import nodes
 from api.requests import MintScanner
@@ -23,71 +24,69 @@ def num_data(data, keys_data):
         j += 1
     return new_data
 
-id_message = {}
 
-# @checker_router.callback_query(text="delete")
-# async def create_checker(callback: CallbackQuery, state: FSMContext):
-#     """Entry point for create checker conversation"""
-
-#     id_message[callback.from_user.id] = callback.message.message_id
-
-
-#     await callback.message.edit_text(
-#         'Let\'s see...\n'
-#         'What\'s your validator\'s name?'
-#     )
-
-#      await state.set_state(DeleteChecker.operator_address)
 
 
 @checker_router.callback_query(text="delete")
-async def create_checker(callback: CallbackQuery, state: FSMContext):
-    """Entry point for create checker conversation"""
+async def create_checker(callback: CallbackQuery, state: FSMContext, storage: RedisStorage):
+    checkers = await storage.redis.get('checkers') or '{}'
+    checkers = json.loads(checkers)
+    if checkers != {}:
+        logging.info(f'{checkers}')
+        checkers = checkers['validators'] 
 
-    data = await state.get_data()
-    name_node = name
-
-    validators = data.get('validators', {})
-    validators = [f'{validator["operator_address"]}'
-            for num, validator in enumerate(validators.values(), 1)]
-
-    if validators:
-        await callback.message.edit_text(
-            'Let\'s see...\n'
-            'What\'s your validator\'s name?',
-            reply_markup=list_validators(validators, "delete")
-        )
+        copy_validators = get_index_by_network(checkers, callback.from_user.id)
+        await state.update_data(copy_validators=copy_validators)
+    else:
+        copy_validators = {}
     
+    if copy_validators != {}:
+        await callback.message.edit_text(
+                '<b>Network</b>\n',
+                reply_markup=list_validators(list(copy_validators.keys()), "delete_network")
+            )
     else:
         await callback.answer(
             'Sorry, but I didn\'t find any checker. \n'
             'First, create a checker',
             # show_alert=True
         )
-    # await state.set_state(DeleteChecker.operator_address)
 
 
-#
-#
-# @checker_router.message(state=DeleteChecker.chain)
-# async def enter_chain(message: Message, state: FSMContext):
-#     """Enter chain name"""
-#     data = await state.get_data()
-#     if message.text in nodes.keys():
-#         data['chain'] = message.text
-#
-#         await message.answer(
-#             'Okay, now I need the name of this validator'
-#         )
-#         await state.set_state(DeleteChecker.operator_address)
-#         await state.update_data(data)
-#     else:
-#         await message.answer(
-#             'Sorry, but we dont have this validator\'s network\n'
-#             'Try again'
-#         )
+@checker_router.callback_query(Text(text_startswith="delete_network&"))
+async def chain(callback: CallbackQuery, state: FSMContext, storage: RedisStorage, bot: Bot):
+    """Entry point for create checker conversation"""
 
-@checker_router.callback_query(Text(text_startswith="delete&"))
+    network = callback.data.split("&")[-1]
+    await state.update_data(network=network)
+    data = await state.get_data()
+
+
+
+    await bot.edit_message_text(
+        '<b>Node</b>',
+        message_id=data['id_message'],
+        chat_id=callback.from_user.id,
+        reply_markup=list_validators(list(data['copy_validators'][network].keys()), "delete_chain")
+    )
+
+@checker_router.callback_query(Text(text_startswith="delete_chain&"))
+async def create_checker(callback: CallbackQuery, state: FSMContext, bot: Bot):
+    """Entry point for create checker conversation"""
+
+    chain = callback.data.split("&")[-1]
+    await state.update_data(chain=chain)
+    data = await state.get_data()
+    
+    await bot.edit_message_text(
+        'Let\'s see...\n'
+        'What\'s your validator\'s name?',
+        message_id=data['id_message'],
+        chat_id=callback.from_user.id,
+        reply_markup=list_validators(data['copy_validators'][data['network']][chain][str(callback.from_user.id)], "delete_moniker")
+    )
+
+@checker_router.callback_query(Text(text_startswith="delete_moniker&"))
 async def enter_operator_address(callback: CallbackQuery, state: FSMContext,
                                  scheduler: AsyncIOScheduler, bot: Bot, storage: RedisStorage):
     """Enter validator's name"""
@@ -97,7 +96,7 @@ async def enter_operator_address(callback: CallbackQuery, state: FSMContext,
     data = await state.get_data()
     checkers = await storage.redis.get('checkers') or '{}'
     checkers = json.loads(checkers)
-    name_node = name
+    name_node = data['chain']
     logging.debug(f"checkers {checkers} \ndata {data} \n{moniker} \n{name_node}")
 
 
@@ -108,7 +107,7 @@ async def enter_operator_address(callback: CallbackQuery, state: FSMContext,
         if validator.get('chain') == name_node and validator.get('operator_address') == moniker:
             validator_to_delete = validator_id
             validators.pop(validator_to_delete)
-            del checkers['validators'][str(callback.from_user.id)][moniker]
+            del checkers['validators'][data['network']][data['chain']][str(callback.from_user.id)][moniker]
 
             break
 

@@ -26,9 +26,6 @@ from tgbot.keyboards.inline import menu, to_menu, list_validators
 async def change_network(callback : CallbackQuery, state: FSMContext):
     logging.info(f'Chains {chains.keys()}')
     
-    
-        
-        
     await state.update_data(id_message=callback.message.message_id)
     await callback.message.edit_text("Please select a network",
                             reply_markup=list_validators(['Mainnet', 'Testnet'], 'network'))
@@ -45,7 +42,7 @@ async def change_chain(callback : CallbackQuery, state: FSMContext, bot: Bot):
 
     logging.info(f'Chains {chains.keys()}')
     
-    if chains[network] !=  {}:
+    if chains[network] != {}:
         await  bot.edit_message_text("Please select a chain",
                                 chat_id=callback.from_user.id,
                                 message_id=data['id_message'],
@@ -94,8 +91,8 @@ async def enter_operator_address(message : Message, state: FSMContext,
     
     del data["id_message"]
 
-    name_node = name
-    validators = await mint_scanner.get_validators(name_node)
+    
+    validators = await mint_scanner.get_validators(data['chain'])
     logging.info(f'Got {len(validators)} validators')
 
 
@@ -160,27 +157,10 @@ async def enter_operator_address(message : Message, state: FSMContext,
         i = str( len(data.get('validators')) )
         # if checkers.get() != {}:
         data['validators'][i] = {
-            'chain': name_node,
+            'chain': data['chain'],
             'operator_address': message.text
         }
-        # else:
-        #     data['validators'][i] = {
-        #         'chain': name_node,
-        #         'operator_address': message.text,
-        #         'last_time': ""
-        #     }
-        
-        
-        # with open("cache/data.json", "r") as file:
-        #     data_send = json.load(file)
 
-        # if str(message.from_user.id) not in data_send.keys():
-        #     data_send[str(message.from_user.id)]=[]
-
-        # data_send[str(message.from_user.id)].append(moniker)
-        
-        # with open("cache/data.json", "w") as file:
-        #     json.dump( data_send, file)
 
         
         await bot.edit_message_text( 
