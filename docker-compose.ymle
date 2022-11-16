@@ -18,8 +18,8 @@ services:
       - mint_scan
 
   mintscan_api:
-    image: "mintscan_api_juno"
-    container_name: "mintscan_api_juno"
+    image: "mintscan_api"
+    container_name: "mintscan_api"
     stop_signal: SIGINT
     build:
       context: .
