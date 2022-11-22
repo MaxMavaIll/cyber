@@ -126,7 +126,7 @@ async def add_user_checker(bot: Bot, mint_scanner: MintScanner, #user_id: int, p
                             if checkers.get('all_missed') is None:
                                 data = await mint_scanner.parse_application(chain, moniker)
                                 # logging.debug(f"data: {data}")
-                                checkers['all_missed'] = data['data']['validators']
+                                checkers['all_missed'][chain] = data['data']['validators']
 
 
                                 logging.debug(f'checkers["all_missed"] add validators_list {data["data"]["validators"][get_index_by_moniker(moniker, data["data"]["validators"])]}')
