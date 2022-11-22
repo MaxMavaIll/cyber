@@ -31,16 +31,17 @@ def num_data(data, keys_data):
 async def create_checker(callback: CallbackQuery, state: FSMContext, storage: RedisStorage):
     checkers = await storage.redis.get('checkers') or '{}'
     checkers = json.loads(checkers)
+    data = await state.get_data()
+    validators = data.get('validators')   
+         
+
     if checkers != {}:
         logging.info(f'{checkers}')
-        checkers = checkers['validators'] 
-
-        copy_validators = get_index_by_network(checkers, callback.from_user.id)
+        copy_validators = get_index_by_network(checkers['validators'], callback.from_user.id)
         await state.update_data(copy_validators=copy_validators)
-    else:
-        copy_validators = {}
+        
     
-    if copy_validators != {}:
+    if validators:
         await callback.message.edit_text(
                 '<b>Network</b>\n',
                 reply_markup=list_validators(list(copy_validators.keys()), "delete_network")

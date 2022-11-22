@@ -20,7 +20,7 @@ from schedulers.jobs import add_user_checker
 from tgbot.handlers.manage_checkers.router import checker_router
 from tgbot.misc.states import Status
 from tgbot.keyboards.inline import validator_moniker
-from tgbot.keyboards.inline import menu, list_validators, to_menu
+from tgbot.keyboards.inline import *
 
 
 import os
@@ -64,14 +64,17 @@ async def chain(callback: CallbackQuery, state: FSMContext, storage: RedisStorag
     network = callback.data.split("&")[-1]
     await state.update_data(network=network)
     data = await state.get_data()
+    data_cp = data['copy_validators']
 
+    logging.info(f'data {data_cp}')
+    logging.info(f'data {data_cp[network].keys()}')
 
 
     await bot.edit_message_text(
         '<b>Node</b>',
         message_id=data['id_message'],
         chat_id=callback.from_user.id,
-        reply_markup=list_validators(list(data['copy_validators'][network].keys()), "status_chain")
+        reply_markup=list_validators(list(data_cp[network].keys()), "status_chain" )
     )
     
 @checker_router.callback_query(Text(text_startswith="status_chain&"))
@@ -85,7 +88,7 @@ async def monikers(callback: CallbackQuery, state: FSMContext, storage: RedisSto
         "The status of which validator do you want to know?",
         message_id=data['id_message'],
         chat_id=callback.from_user.id,
-        reply_markup=list_validators(data['copy_validators'][data['network']][chain][str(callback.from_user.id)], "status_moniker")
+        reply_markup=list_validators_back(data['copy_validators'][data['network']][chain][str(callback.from_user.id)], "status_moniker", "status_network", chain)
     )
     
     
@@ -126,12 +129,12 @@ async def enter_operator_address(callback: CallbackQuery, state: FSMContext,
     else:
         status = "🔴 UNBONDED"
 
-    await callback.answer(
+    await callback.message.answer(
         f'status: '
         f'\n    moniker: {validators["description"]["moniker"]}'
         f'\n    voting power: {validators["tokens"]}'
         f'\n    Jailed:  {validators["jailed"]}'
         f'\n    validators status: {status}'
         f'\n    missed blocks: {missed_blocks_counter}',
-        show_alert=True, 
+        # show_alert=True, 
     )

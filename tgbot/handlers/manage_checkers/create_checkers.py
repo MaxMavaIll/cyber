@@ -108,7 +108,7 @@ async def enter_operator_address(message : Message, state: FSMContext,
         
         data.setdefault('validators', {})
         for validator_id, validator in data['validators'].items():
-            if validator['operator_address'] == moniker:
+            if validator['operator_address'] == moniker and validator['chain'] == data['chain']:
                 
 
                 await bot.edit_message_text(

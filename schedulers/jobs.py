@@ -114,7 +114,6 @@ async def add_user_checker(bot: Bot, mint_scanner: MintScanner, #user_id: int, p
         
         for network in checkers['validators']:
             for chain in checkers['validators'][network]:
-
                 for user_id in checkers['validators'][network][chain]:
                     for moniker in checkers['validators'][network][chain][user_id]:
                         logging.info(f'Оброблюється {user_id} {moniker}')
