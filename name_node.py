@@ -6,7 +6,10 @@ chains = {
         'bostrom': {'bin': '/root/go/bin/cyber', 'node': 'https://rpc.bostrom.cybernode.ai:443', 
                 'parameters': {'min_signed_per_window': 75, 'signed_blocks_window': 8000, 'skipped_blocks_allowed': 8000 * (100 - 75) / 100, 'blok_time': 5.5 }}
         }, 
-    'Testnet': {}
+    'Testnet': {
+        'uptick': {'bin': '/root/go/bin/uptickd', 'node': 'https://uptick-testnet.nodejumper.io:443', 
+                'parameters': {'min_signed_per_window': 50, 'signed_blocks_window': 14000, 'blok_time': 5.5 }}
+        }
 }
 
 name = "juno"

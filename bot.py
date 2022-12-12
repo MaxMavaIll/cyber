@@ -1,6 +1,7 @@
 import asyncio
 import logging
 
+from name_node import chains
 from aiogram import Bot, Dispatcher
 from aiogram.dispatcher.fsm.storage.redis import RedisStorage, DefaultKeyBuilder
 
@@ -54,7 +55,6 @@ async def main():
         dp.include_router(router)
 
     register_global_middlewares(dp, config)
-    bot.edit_message_text("sdfsdf", chat_id=None)
     dp['bot'] = bot
     dp['scheduler'] = scheduler
     dp['mint_scanner'] = mint_scanner
@@ -67,17 +67,18 @@ async def main():
     await on_startup(bot, config.tg_bot.admin_ids)
     scheduler.start()
     
-    scheduler.add_job(
-            add_user_checker,
-            IntervalTrigger(minutes=10),
-            # kwargs={
-            #     'user_id': message.from_user.id,
-            #     'platform': name_node,
-            #     'moniker': moniker,
-            # },
-            next_run_time=datetime.now(),
-            replace_existing=True
-        )
+    for network in chains:
+        for chain in chains[network]: 
+            scheduler.add_job(
+                    add_user_checker,
+                    IntervalTrigger(minutes=10),
+                    kwargs={
+                        'network': network,
+                        'chain': chain, 
+                    },
+                    next_run_time=datetime.now(),
+                    replace_existing=True
+                )
 
     await dp.start_polling(bot)
 

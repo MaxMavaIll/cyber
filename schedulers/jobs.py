@@ -7,7 +7,7 @@ import math
 from aiogram import Bot
 from aiogram.dispatcher.fsm.storage.redis import RedisStorage
 
-
+import time
 from api.requests import MintScanner
 from schedulers.exceptions import NoSlashingInfo, raise_error
 from schedulers.exceptions import raise_error
@@ -57,7 +57,7 @@ async def sends_message_client(bot: list, user_id: int | str, moniker: str,
                 logging.info("Я закінчив роз силку miss")
 
 async def add_user_checker(bot: Bot, mint_scanner: MintScanner, #user_id: int, platform: str, moniker: str,
-                           storage: RedisStorage):
+                           storage: RedisStorage, chain: str, network: str):
     logging.info('Я почав розсилку')
     
 
@@ -96,41 +96,31 @@ async def add_user_checker(bot: Bot, mint_scanner: MintScanner, #user_id: int, p
 
 
 
-    if checkers == {}: 
-        logging.info("Масив пустий {}")
-        logging.info("Я закінчив роз силку")
+    if checkers == {} or chain not in checkers['validators'][network].keys(): 
+        logging.info("Масив пустий {} ")
+        logging.info(f"Я закінчив роз силку {chain}")
         
         await storage.redis.set('checkers', json.dumps(checkers))
         return
 
     else:
-        for network in checkers['validators']:
-            for chain in checkers['validators'][network]:
-                for id in checkers.get('validators')[network][chain]:
+        for id in checkers['validators'][network][chain]:
                     for val in checkers['validators'][network][chain][id]:
                         if checkers['validators'][network][chain][id][val]["addr_cons"] is None and len(stake) < 2*2:
                             stake.append(id)
                             stake.append(val)
         
-        for network in checkers['validators']:
-            for chain in checkers['validators'][network]:
-                for user_id in checkers['validators'][network][chain]:
+        for user_id in checkers['validators'][network][chain]:
                     for moniker in checkers['validators'][network][chain][user_id]:
-                        logging.info(f'Оброблюється {user_id} {moniker}')
                         skipped_blocks_allowed = chains[network][chain]["parameters"]['skipped_blocks_allowed']
                         time_jail = skipped_blocks_allowed * chains[network][chain]["parameters"]['blok_time']
 
 
-                        if checkers['validators'][network][chain][user_id][moniker].get('addr_cons') is None and user_id in stake and moniker in stake:
                         
+                        if checkers['validators'][network][chain][user_id][moniker].get('addr_cons') is None and user_id in stake and moniker in stake:
                             if checkers.get('all_missed') is None:
                                 data = await mint_scanner.parse_application(chain, moniker)
-                                # logging.debug(f"data: {data}")
-                                checkers['all_missed'][chain] = data['data']['validators']
-
-
-                                logging.debug(f'checkers["all_missed"] add validators_list {data["data"]["validators"][get_index_by_moniker(moniker, data["data"]["validators"])]}')
-                                logging.info(f"Get missed_blocks_counter, validators, missed_blocks_counter ")
+                                checkers['all_missed'] = data['data']['validators']
 
                                 if not data['ok']:
                                     await bot.send_message(ADMIN_ID, "Error happened: " + data['error'] + "\n\n" + f'{moniker=}, {chain=}')
@@ -138,10 +128,9 @@ async def add_user_checker(bot: Bot, mint_scanner: MintScanner, #user_id: int, p
 
                                 missed_blocks_counter = data['missed_blocks_counter']
 
-                                logging.info(f"Missed blocks counter {moniker} : {missed_blocks_counter} first")
-
                             else:
-                                data = await mint_scanner.get_repeated_missing_block(chain, checkers['all_missed'][(get_index_by_moniker(moniker, checkers['all_missed']))].get('consensus_pubkey').get('key'))
+                                logging.info(f"\nall_missed {checkers['all_missed']}")
+                                data = await mint_scanner.get_repeated_missing_block(chain, checkers['all_missed'][get_index_by_moniker(moniker, checkers['all_missed'])].get('consensus_pubkey').get('key'))
                                 missed_blocks_counter = int(data['missed_blocks_counter']['missed_blocks_counter'])
 
                                 logging.info(f"Missed blocks counter {moniker} : {missed_blocks_counter} second")
