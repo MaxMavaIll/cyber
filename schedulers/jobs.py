@@ -14,7 +14,7 @@ from schedulers.exceptions import raise_error
 from api.functions import get_index_by_moniker, get_index_by_address
 
 # from name_node import skipped_blocks_allowed, time_jail, name 
-from config import chains
+from api.config import chains
 
 env = environs.Env()
 env.read_env()

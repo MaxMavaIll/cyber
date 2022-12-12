@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from config import chains
+from api.config import chains
 
 from aiogram import Bot, Dispatcher
 from aiogram.dispatcher.fsm.storage.redis import RedisStorage, DefaultKeyBuilder

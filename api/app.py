@@ -1,6 +1,7 @@
 import logging
 from fastapi import FastAPI, Request
 
+
 from errors import Errors
 from config import API_TOKEN, nodes
 from functions import load_block, get_index_by_moniker, get_consensus_pubkey, slashing_signing_info, \

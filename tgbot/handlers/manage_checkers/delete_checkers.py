@@ -9,7 +9,7 @@ from aiogram.dispatcher.fsm.storage.redis import RedisStorage
 
 from api.functions import get_index_by_network
 
-from config import nodes
+from api.config import nodes
 # from api.config import nodes
 from api.requests import MintScanner
 from tgbot.handlers.manage_checkers.router import checker_router

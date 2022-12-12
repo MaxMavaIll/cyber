@@ -2,7 +2,7 @@ import asyncio
 import logging, json
 from datetime import datetime
 
-from config import nodes, chains
+from api.config import nodes, chains
 from aiogram import Bot
 from aiogram.dispatcher.filters import Command, Text
 from aiogram.dispatcher.fsm.context import FSMContext
