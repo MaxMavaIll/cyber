@@ -39,12 +39,12 @@ def list_validators(validarots: list, func: str):
     
     return builder.as_markup()
 
-def list_validators_back(validarots: list, func: str, back: str, last_choice: str):
+def list_validators_back(validarots: list, func: str, back: str, last_choice='' ):
     builder = InlineKeyboardBuilder()
     for num in range(len(validarots)):
         builder.add( InlineKeyboardButton(text=validarots[num], callback_data=f"{func}&{validarots[num]}") )
     builder.adjust(4)
-    builder.row(InlineKeyboardButton(text="Menu", callback_data="menu"), InlineKeyboardButton(text="Back", callback_data=f'{back}&{last_choice}'))
+    builder.row(InlineKeyboardButton(text="Menu", callback_data="menu"), InlineKeyboardButton(text="Back", callback_data=f'{back}{last_choice}'))
 
     
     return builder.as_markup()

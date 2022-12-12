@@ -61,11 +61,15 @@ async def chain(callback: CallbackQuery, state: FSMContext, storage: RedisStorag
     """Entry point for create checker conversation"""
 
     network = callback.data.split("&")[-1]
-    await state.update_data(network=network)
+    logging.info(f'{network}')
     data = await state.get_data()
     data_cp = data['copy_validators']
+    if network == 'back':
+        network = data['network']
+    else:
+        await state.update_data(network=network)
 
-    logging.info(f'data {data_cp}')
+    logging.info(f'data {data}')
     logging.info(f'data {data_cp[network].keys()}')
 
 
@@ -73,7 +77,7 @@ async def chain(callback: CallbackQuery, state: FSMContext, storage: RedisStorag
         '<b>Node</b>',
         message_id=data['id_message'],
         chat_id=callback.from_user.id,
-        reply_markup=list_validators(list(data_cp[network].keys()), "status_chain" )
+        reply_markup=list_validators_back(list(data_cp[network].keys()), "status_chain", "status")
     )
     
 @checker_router.callback_query(Text(text_startswith="status_chain&"))
@@ -87,7 +91,7 @@ async def monikers(callback: CallbackQuery, state: FSMContext, storage: RedisSto
         "The status of which validator do you want to know?",
         message_id=data['id_message'],
         chat_id=callback.from_user.id,
-        reply_markup=list_validators_back(data['copy_validators'][data['network']][chain][str(callback.from_user.id)], "status_moniker", "status_network", chain)
+        reply_markup=list_validators_back(data['copy_validators'][data['network']][chain][str(callback.from_user.id)], "status_moniker", "status_network", '&back')
     )
     
     
