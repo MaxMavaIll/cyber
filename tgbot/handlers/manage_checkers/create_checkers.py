@@ -2,7 +2,7 @@ import asyncio
 import logging, json
 from datetime import datetime
 
-from name_node import name, chains
+from config import nodes, chains
 from aiogram import Bot
 from aiogram.dispatcher.filters import Command, Text
 from aiogram.dispatcher.fsm.context import FSMContext
@@ -13,7 +13,7 @@ from apscheduler.triggers.interval import IntervalTrigger
 from aiogram.dispatcher.fsm.storage.redis import RedisStorage
 
 
-from api.config import nodes
+# from api.config import nodes
 from api.functions import get_index_by_moniker
 from api.requests import MintScanner
 from schedulers.jobs import add_user_checker

@@ -13,7 +13,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
-from api.config import nodes
+from config import nodes
 from api.functions import get_index_by_moniker, get_index_by_network
 from api.requests import MintScanner
 from schedulers.jobs import add_user_checker
@@ -24,7 +24,6 @@ from tgbot.keyboards.inline import *
 
 
 import os
-from api.config import nodes
 from api.functions import load_block
 
 

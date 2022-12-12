@@ -14,7 +14,7 @@ from schedulers.exceptions import raise_error
 from api.functions import get_index_by_moniker, get_index_by_address
 
 # from name_node import skipped_blocks_allowed, time_jail, name 
-from name_node import chains
+from config import chains
 
 env = environs.Env()
 env.read_env()
@@ -105,82 +105,73 @@ async def add_user_checker(bot: Bot, mint_scanner: MintScanner, #user_id: int, p
 
     else:
         for id in checkers['validators'][network][chain]:
-                    for val in checkers['validators'][network][chain][id]:
-                        if checkers['validators'][network][chain][id][val]["addr_cons"] is None and len(stake) < 2*2:
-                            stake.append(id)
-                            stake.append(val)
+            for val in checkers['validators'][network][chain][id]:
+                if checkers['validators'][network][chain][id][val]["addr_cons"] is None and len(stake) < 2*2:
+                    stake.append(id)
+                    stake.append(val)
         
         for user_id in checkers['validators'][network][chain]:
-                    for moniker in checkers['validators'][network][chain][user_id]:
-                        skipped_blocks_allowed = chains[network][chain]["parameters"]['skipped_blocks_allowed']
-                        logging.info(f'\n\n{skipped_blocks_allowed}\n\n')
-                        time_jail = skipped_blocks_allowed * chains[network][chain]["parameters"]['blok_time']
+            for moniker in checkers['validators'][network][chain][user_id]:
+                skipped_blocks_allowed = chains[network][chain]["parameters"]['skipped_blocks_allowed']
+                time_jail = skipped_blocks_allowed * chains[network][chain]["parameters"]['blok_time']
 
 
+                
+                if checkers['validators'][network][chain][user_id][moniker].get('addr_cons') is None and user_id in stake and moniker in stake:
+                    if checkers.get('all_missed') is None:
+                        data = await mint_scanner.parse_application(chain, moniker)
+                        checkers['all_missed'] = data['data']['validators']
+
+                        if not data['ok']:
+                            await bot.send_message(ADMIN_ID, "Error happened: " + data['error'] + "\n\n" + f'{moniker=}, {chain=}')
+                            raise raise_error(data['error'])
+
+                        missed_blocks_counter = data['missed_blocks_counter']
+
+                    else:
+                        data = await mint_scanner.get_repeated_missing_block(chain, checkers['all_missed'][get_index_by_moniker(moniker, checkers['all_missed'])].get('consensus_pubkey').get('key'))
+                        missed_blocks_counter = int(data['missed_blocks_counter']['missed_blocks_counter'])
+                    
+                    logging.info(f'Sleeping for 180 seconds ')
+                    await asyncio.sleep(180)
+                    data_new = await mint_scanner.get_repeated_missing_block(chain, checkers['all_missed'][get_index_by_moniker(moniker, checkers['all_missed'])].get("consensus_pubkey").get('key'))
+                    checkers['validators'][network][chain][str(user_id)][moniker]['addr_cons'] = data_new['missed_blocks_counter']['address']
+                    missed_blocks_counter_new = int(data_new['missed_blocks_counter']['missed_blocks_counter'])
+
+                    missed_blocks_counter_new, percentages, time_to_jail = await check( missed_blocks_counter, missed_blocks_counter_new, skipped_blocks_allowed, time_jail)
+                    await sends_message_client(bot, user_id, moniker, percentages, skipped_blocks_allowed, time_to_jail, missed_blocks_counter_new)
+
+                    logging.debug(f" old_rezult {type(missed_blocks_counter)} , new_rezult {type(missed_blocks_counter_new)}")
+                    logging.info(f'{data_new}')
+                    logging.info(f"Get second missed blocks counter {moniker}: {missed_blocks_counter_new} rizn {missed_blocks_counter_new - missed_blocks_counter}")
+                    logging.debug(f"missed_blocks: {missed_blocks_counter_new}, percentages: {percentages}, time_to_jail: {time_to_jail} ")
+                    
+                elif checkers['validators'][network][chain][str(user_id)][moniker].get('addr_cons') is not None:
+                
+                    logging.debug("cons_true")
+                    if all_cons_validators_one is None:
+                        all_cons_validators_one = await mint_scanner.get_repeated_missing_blocks(chain, checkers['validators'][network][chain][str(user_id)][moniker].get('addr_cons'))
                         
-                        if checkers['validators'][network][chain][user_id][moniker].get('addr_cons') is None and user_id in stake and moniker in stake:
-                            if checkers.get('all_missed') is None:
-                                data = await mint_scanner.parse_application(chain, moniker)
-                                checkers['all_missed'] = data['data']['validators']
+                        logging.info(f'Sleeping for 180 const')
+                        await asyncio.sleep(180)
+                        all_cons_validators_second = await mint_scanner.get_repeated_missing_blocks(chain, checkers['validators'][network][chain][str(user_id)][moniker].get('addr_cons'))
 
-                                if not data['ok']:
-                                    await bot.send_message(ADMIN_ID, "Error happened: " + data['error'] + "\n\n" + f'{moniker=}, {chain=}')
-                                    raise raise_error(data['error'])
+                    index = get_index_by_address(checkers['validators'][network][chain][str(user_id)][moniker]['addr_cons'],
+                                                all_cons_validators_one['missed_blocks_counters'])
 
-                                missed_blocks_counter = data['missed_blocks_counter']
+                    cons_val_one = int(all_cons_validators_one['missed_blocks_counters'][index].get('missed_blocks_counter'))
+                    #cons_val_one = 130
 
-                            else:
-                                logging.info(f"\nall_missed {checkers['all_missed']}")
-                                data = await mint_scanner.get_repeated_missing_block(chain, checkers['all_missed'][get_index_by_moniker(moniker, checkers['all_missed'])].get('consensus_pubkey').get('key'))
-                                missed_blocks_counter = int(data['missed_blocks_counter']['missed_blocks_counter'])
+                    cons_val_two = int(all_cons_validators_second['missed_blocks_counters'][index].get('missed_blocks_counter'))
 
-                                logging.info(f"Missed blocks counter {moniker} : {missed_blocks_counter} second")
+                    missed_blocks_counter_new, percentages, time_to_jail = await check( cons_val_one, cons_val_two, skipped_blocks_allowed, time_jail )
 
-
-
-                            
-                            logging.info(f'Sleeping for 180 seconds ')
-                            await asyncio.sleep(180)
-                            data_new = await mint_scanner.get_repeated_missing_block(chain, checkers['all_missed'][get_index_by_moniker(moniker, checkers['all_missed'])].get("consensus_pubkey").get('key'))
-                            checkers['validators'][network][chain][str(user_id)][moniker]['addr_cons'] = data_new['missed_blocks_counter']['address']
-                            missed_blocks_counter_new = int(data_new['missed_blocks_counter']['missed_blocks_counter'])
-
-                            logging.debug(f" old_rezult {type(missed_blocks_counter)} , new_rezult {type(missed_blocks_counter_new)}")
-                            logging.info(f'{data_new}')
-
-                            logging.info(f"Get second missed blocks counter {moniker}: {missed_blocks_counter_new} rizn {missed_blocks_counter_new - missed_blocks_counter}")
-
-                            missed_blocks_counter_new, percentages, time_to_jail = await check( missed_blocks_counter, missed_blocks_counter_new, skipped_blocks_allowed, time_jail)
-
-                            logging.debug(f"missed_blocks: {missed_blocks_counter_new}, percentages: {percentages}, time_to_jail: {time_to_jail} ")
-
-                            await sends_message_client(bot, user_id, moniker, percentages, skipped_blocks_allowed, time_to_jail, missed_blocks_counter_new)
-                            
-                        elif checkers['validators'][network][chain][str(user_id)][moniker].get('addr_cons') is not None:
-                        
-                            logging.info("cons_true")
-                            if all_cons_validators_one is None:
-                                all_cons_validators_one = await mint_scanner.get_repeated_missing_blocks(chain, checkers['validators'][network][chain][str(user_id)][moniker].get('addr_cons'))
-                                
-                                logging.info(f'Sleeping for 180 const')
-                                await asyncio.sleep(180)
-                                all_cons_validators_second = await mint_scanner.get_repeated_missing_blocks(chain, checkers['validators'][network][chain][str(user_id)][moniker].get('addr_cons'))
-
-                            logging.debug(f" const: {checkers['validators'][network][chain][str(user_id)][moniker]['addr_cons']}")
-                            index = get_index_by_address(checkers['validators'][network][chain][str(user_id)][moniker]['addr_cons'],
-                                                        all_cons_validators_one['missed_blocks_counters'])
-                            logging.info(f"index cons_validators: {index}")
-
-                            cons_val_one = int(all_cons_validators_one['missed_blocks_counters'][index].get('missed_blocks_counter'))
-                            #cons_val_one = 130
-                            logging.info(f"Missed blocks counter {moniker} : {cons_val_one} const")
-
-                            cons_val_two = int(all_cons_validators_second['missed_blocks_counters'][index].get('missed_blocks_counter'))
-                            logging.info(f"Second Missed blocks counter {moniker} : {cons_val_two} const")
-
-                            missed_blocks_counter_new, percentages, time_to_jail = await check( cons_val_one, cons_val_two, skipped_blocks_allowed, time_jail )
-
-                            await sends_message_client(bot, user_id, moniker, percentages, skipped_blocks_allowed, time_to_jail, missed_blocks_counter_new)
+                    await sends_message_client(bot, user_id, moniker, percentages, skipped_blocks_allowed, time_to_jail, missed_blocks_counter_new)
+                    
+                    logging.debug(f"const: {checkers['validators'][network][chain][str(user_id)][moniker]['addr_cons']}")
+                    logging.info(f"index cons_validators: {index}")
+                    logging.info(f"Missed blocks counter {moniker} : {cons_val_one} const")
+                    logging.info(f"Second Missed blocks counter {moniker} : {cons_val_two} const")
 
         checkers['all_missed'] = None
         checkers['miss_all_blocks'] = None

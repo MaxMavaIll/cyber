@@ -1,9 +1,10 @@
 import asyncio
 import logging
+from config import chains
 
-from name_node import chains
 from aiogram import Bot, Dispatcher
 from aiogram.dispatcher.fsm.storage.redis import RedisStorage, DefaultKeyBuilder
+from datetime import datetime
 
 from api.requests import MintScanner
 from schedulers.base import setup_scheduler
@@ -17,7 +18,6 @@ from tgbot.services import broadcaster
 
 from schedulers.jobs import add_user_checker
 from apscheduler.triggers.interval import IntervalTrigger
-from datetime import datetime
 
 
 logger = logging.getLogger(__name__)
