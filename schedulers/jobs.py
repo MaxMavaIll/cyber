@@ -113,6 +113,7 @@ async def add_user_checker(bot: Bot, mint_scanner: MintScanner, #user_id: int, p
         for user_id in checkers['validators'][network][chain]:
                     for moniker in checkers['validators'][network][chain][user_id]:
                         skipped_blocks_allowed = chains[network][chain]["parameters"]['skipped_blocks_allowed']
+                        logging.info(f'\n\n{skipped_blocks_allowed}\n\n')
                         time_jail = skipped_blocks_allowed * chains[network][chain]["parameters"]['blok_time']
 
 
