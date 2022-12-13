@@ -124,7 +124,7 @@ async def enter_operator_address(message : Message, state: FSMContext,
                     message_id=id_message,
                     reply_markup=to_menu(back=True, text='Try again', back_to='chain&back')
                 )
-                
+                await state.set_state(None)
                 return
         if 'all_missed' not in checkers and 'miss_all_blocks' not in checkers:
             checkers = {'all_missed' : None, "miss_all_blocks": None}

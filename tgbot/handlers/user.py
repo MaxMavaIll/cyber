@@ -1,6 +1,7 @@
 from cgitb import text
 from aiogram import Router
 from aiogram.types import Message, CallbackQuery
+from aiogram.dispatcher.fsm.context import FSMContext
 
 from tgbot.keyboards.inline import menu
 
@@ -20,5 +21,6 @@ async def user_start(message: Message):
                         'Hey, if you like this bot, you can delegate funds to the cyberG validator.', reply_markup= menu())
 
 @user_router.callback_query(text="menu")
-async def Menu(callback: CallbackQuery):
+async def Menu(callback: CallbackQuery, state: FSMContext):
+    await state.set_state(None)
     await callback.message.edit_text("<b>Menu</b>", reply_markup=menu())
