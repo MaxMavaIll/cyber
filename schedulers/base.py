@@ -37,7 +37,7 @@ def setup_scheduler(bot=None, config: Config = None, mint_scanner=None, storage=
     }
 
     scheduler = ContextSchedulerDecorator(
-        AsyncIOScheduler(jobstores=job_stores, timezone=str(get_localzone()))
+        AsyncIOScheduler( timezone=str(get_localzone()))
     )
     if not bot:
         bot = Bot(config.tg_bot.token)

@@ -14,7 +14,7 @@ class MintScanner:
         self.session = aiohttp.ClientSession()
         self.base_api_uri = base_api_uri
 
-    async def parse_application(self, platform: str, moniker: str):
+    async def parse_application(self, platform: str | list, moniker: str):
         data = {
             "moniker": moniker,
             "token": self.api_token
@@ -23,7 +23,7 @@ class MintScanner:
 
         return response
 
-    async def get_repeated_missing_blocks(self, platform: str, consensus_pubkey: str):
+    async def get_repeated_missing_block(self, platform: str, consensus_pubkey: str):
         data = {
             "token": self.api_token,
             "platform": platform,
@@ -32,7 +32,16 @@ class MintScanner:
         response = await self._post('repeat', 'missed_block_counter', json=data)
         return response
 
-    async def get_validators(self, platform: str):
+    async def get_repeated_missing_blocks(self, platform: str, consensus_pubkey: str):
+        data = {
+            "token": self.api_token,
+            "platform": platform,
+            "consensus_pubkey": consensus_pubkey,
+        }
+        response = await self._post('repeat', 'missed_block_counters', json=data)
+        return response
+
+    async def get_validators(self, platform: str | list):
         data = {
             "token": self.api_token,
         }

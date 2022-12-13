@@ -1,8 +1,10 @@
 import asyncio
 import logging
+from api.config import chains
 
 from aiogram import Bot, Dispatcher
 from aiogram.dispatcher.fsm.storage.redis import RedisStorage, DefaultKeyBuilder
+from datetime import datetime
 
 from api.requests import MintScanner
 from schedulers.base import setup_scheduler
@@ -12,6 +14,11 @@ from tgbot.handlers.manage_checkers import checker_router
 from tgbot.handlers.user import user_router
 from tgbot.middlewares.config import ConfigMiddleware
 from tgbot.services import broadcaster
+
+
+from schedulers.jobs import add_user_checker
+from apscheduler.triggers.interval import IntervalTrigger
+
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +34,7 @@ def register_global_middlewares(dp: Dispatcher, config):
 
 async def main():
     logging.basicConfig(
-        level=logging.INFO,
+        level=logging.DEBUG,
         format=u'%(filename)s:%(lineno)d #%(levelname)-8s [%(asctime)s] - %(name)s - %(message)s',
     )
     logger.info("Starting bot")
@@ -48,13 +55,30 @@ async def main():
         dp.include_router(router)
 
     register_global_middlewares(dp, config)
-    bot.edit_message_text("sdfsdf", chat_id=None)
     dp['bot'] = bot
     dp['scheduler'] = scheduler
     dp['mint_scanner'] = mint_scanner
+    dp['storage'] = storage
+
+    
+    
+
 
     await on_startup(bot, config.tg_bot.admin_ids)
     scheduler.start()
+    
+    for network in chains:
+        for chain in chains[network]: 
+            scheduler.add_job(
+                    add_user_checker,
+                    IntervalTrigger(minutes=1),
+                    kwargs={
+                        'network': network,
+                        'chain': chain, 
+                    },
+                    next_run_time=datetime.now(),
+                    replace_existing=True
+                )
 
     await dp.start_polling(bot)
 
