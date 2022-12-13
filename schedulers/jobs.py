@@ -14,7 +14,7 @@ from schedulers.exceptions import raise_error
 from api.functions import get_index_by_moniker, get_index_by_address
 
 # from name_node import skipped_blocks_allowed, time_jail, name 
-from api.config import chains
+from api.config import chains, time_wait
 
 env = environs.Env()
 env.read_env()
@@ -136,7 +136,7 @@ async def add_user_checker(bot: Bot, mint_scanner: MintScanner, #user_id: int, p
                         missed_blocks_counter = int(data['missed_blocks_counter']['missed_blocks_counter'])
                     
                     logging.info(f'Sleeping for 180 seconds ')
-                    await asyncio.sleep(180)
+                    await asyncio.sleep(time_wait)
                     data_new = await mint_scanner.get_repeated_missing_block(chain, checkers['all_missed'][get_index_by_moniker(moniker, checkers['all_missed'])].get("consensus_pubkey").get('key'))
                     checkers['validators'][network][chain][str(user_id)][moniker]['addr_cons'] = data_new['missed_blocks_counter']['address']
                     missed_blocks_counter_new = int(data_new['missed_blocks_counter']['missed_blocks_counter'])
@@ -156,7 +156,7 @@ async def add_user_checker(bot: Bot, mint_scanner: MintScanner, #user_id: int, p
                         all_cons_validators_one = await mint_scanner.get_repeated_missing_blocks(chain, checkers['validators'][network][chain][str(user_id)][moniker].get('addr_cons'))
                         
                         logging.info(f'Sleeping for 180 const')
-                        await asyncio.sleep(10)
+                        await asyncio.sleep(time_wait)
                         all_cons_validators_second = await mint_scanner.get_repeated_missing_blocks(chain, checkers['validators'][network][chain][str(user_id)][moniker].get('addr_cons'))
 
                     index = get_index_by_address(checkers['validators'][network][chain][str(user_id)][moniker]['addr_cons'],

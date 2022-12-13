@@ -71,7 +71,7 @@ async def main():
         for chain in chains[network]: 
             scheduler.add_job(
                     add_user_checker,
-                    IntervalTrigger(minutes=1),
+                    IntervalTrigger(minutes=10),
                     kwargs={
                         'network': network,
                         'chain': chain, 
