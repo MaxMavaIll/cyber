@@ -23,10 +23,12 @@ def validator_moniker(validator_moniker):
     return builder.as_markup()
 
 
-def to_menu():
+def to_menu(back=False, text='', back_to=''):
     builder = InlineKeyboardBuilder()
     builder.button(text="Menu", callback_data="menu")
-    builder.adjust(1)
+    if back and text:
+        builder.button(text=text, callback_data=back_to)
+    builder.adjust(2)
     return builder.as_markup()
 
 def list_validators(validarots: list, func: str):
