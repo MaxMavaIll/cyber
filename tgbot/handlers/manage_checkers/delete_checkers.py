@@ -34,7 +34,8 @@ async def create_checker(callback: CallbackQuery, state: FSMContext, storage: Re
     checkers = json.loads(checkers)
     data = await state.get_data()
     validators = data.get('validators')   
-         
+    logging.debug(f'\n\nvalidators {validators}\n\n')
+    logging.debug(f'checkers {checkers}\n\n')
 
     if checkers != {}:
         logging.info(f'{checkers}')
@@ -64,7 +65,7 @@ async def chain(callback: CallbackQuery, state: FSMContext, storage: RedisStorag
     data_cp=data['copy_validators']
 
     if network == 'back':
-        network = data[network]
+        network = data["network"]
     else:    
         await state.update_data(network=network)
 
@@ -127,7 +128,8 @@ async def enter_operator_address(callback: CallbackQuery, state: FSMContext,
             break
 
     
-    validators = num_data(validators, validators.keys())
+    validators = data['validators'] = num_data(validators, validators.keys())
+
     
     if data['copy_validators'][data['network']][chian][str(callback.from_user.id)] != []:
         await callback.message.edit_text(

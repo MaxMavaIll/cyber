@@ -23,7 +23,7 @@ def get_index_by_network( validators: list, user_id: str):
     for network in validators:
         for chain in validators[network]:
             for id in validators[network][chain]:
-                logging.info(f'{type(id)}, {validators}, {user_id}, {type(user_id)}')
+                # logging.info(f'{type(id)}, {validators}, {user_id}, {type(user_id)}')
                 for moniker in validators[network][chain][id]:
                     if id == str(user_id):
                         
@@ -31,16 +31,16 @@ def get_index_by_network( validators: list, user_id: str):
 
                         if network not in mass:
                             mass[network] = {}
-                            logging.debug(mass)
+                            # logging.debug(mass)
 
                         if chain not in mass[network]:
                             mass[network][chain] = {}
-                            logging.debug(mass)
+                            # logging.debug(mass)
 
 
                         if str(id) not in mass[network][chain]:
                             mass[network][chain][str(id)] = [moniker]
-                            logging.debug(mass)
+                            # logging.debug(mass)
                         else:
                             mass[network][chain][str(id)].append(moniker)
                         

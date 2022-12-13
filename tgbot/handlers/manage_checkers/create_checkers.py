@@ -130,26 +130,26 @@ async def enter_operator_address(message : Message, state: FSMContext,
         logging.debug(f'Start add')
         if 'all_missed' not in checkers and 'miss_all_blocks' not in checkers:
             checkers = {'all_missed' : None, "miss_all_blocks": None}
-            logging.debug(checkers)
+            logging.debug(f'all_missed {checkers}')
             
 
         if 'validators' not in checkers:
             checkers['validators'] = {}
-            logging.debug(checkers)
+            logging.debug(f'validators {checkers}')
 
 
         if data['network'] not in checkers['validators']:
             checkers['validators'][data['network']] = {}
-            logging.debug(checkers)
+            logging.debug(f'network {checkers}')
 
         if data['chain'] not in checkers['validators'][data['network']]:
             checkers['validators'][data['network']][data['chain']] = {}
-            logging.debug(checkers)
+            logging.debug(f'chain {checkers}')
 
 
         if str(message.from_user.id) not in checkers['validators'][data['network']][data['chain']]:
             checkers['validators'][data['network']][data['chain']][str(message.from_user.id)] = {}
-            logging.debug(checkers)
+            logging.debug(f'id {checkers}')
 
 
         # cons = {"@type": "/cosmos.crypto.ed25519.PubKey",
@@ -160,7 +160,8 @@ async def enter_operator_address(message : Message, state: FSMContext,
             checkers['validators'][data['network']][data['chain']][str(message.from_user.id)][message.text] = {
                 'last_check': 0, 'addr_cons': None
             }
-            
+            logging.debug(f'moniker {checkers}')
+
             
 
 

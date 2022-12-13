@@ -89,14 +89,17 @@ async def add_user_checker(bot: Bot, mint_scanner: MintScanner, #user_id: int, p
     all_cons_validators_one =None
     checkers = await storage.redis.get('checkers') or '{}'
     checkers = json.loads(checkers)
-    # logging.info(f'{checkers}')
+    # logging.info(f'\n\n{network, checkers}')
 
     
-            
-
-
-
-    if checkers == {} or chain not in checkers['validators'][network].keys(): 
+    # try:
+    #     checkers['validators'][network].keys()
+    # except:
+    #     checkers['validators'][network] = {}
+    #     checkers['validators'][network][]= {}
+    # logging.info(f'\n\n{network, checkers}')
+    # or chain not in checkers['validators'][network].keys()
+    if checkers == {}: 
         logging.info("Масив пустий {} ")
         logging.info(f"Я закінчив роз силку {chain}")
         
@@ -153,7 +156,7 @@ async def add_user_checker(bot: Bot, mint_scanner: MintScanner, #user_id: int, p
                         all_cons_validators_one = await mint_scanner.get_repeated_missing_blocks(chain, checkers['validators'][network][chain][str(user_id)][moniker].get('addr_cons'))
                         
                         logging.info(f'Sleeping for 180 const')
-                        await asyncio.sleep(180)
+                        await asyncio.sleep(10)
                         all_cons_validators_second = await mint_scanner.get_repeated_missing_blocks(chain, checkers['validators'][network][chain][str(user_id)][moniker].get('addr_cons'))
 
                     index = get_index_by_address(checkers['validators'][network][chain][str(user_id)][moniker]['addr_cons'],
