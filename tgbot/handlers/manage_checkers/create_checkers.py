@@ -126,6 +126,8 @@ async def enter_operator_address(message : Message, state: FSMContext,
                 )
                 await state.set_state(None)
                 return
+
+        logging.debug(f'Start add')
         if 'all_missed' not in checkers and 'miss_all_blocks' not in checkers:
             checkers = {'all_missed' : None, "miss_all_blocks": None}
             logging.debug(checkers)

@@ -34,7 +34,7 @@ async def check_val_new():
     pass
 
 
-async def sends_message_client(bot: list, user_id: int | str, moniker: str, 
+async def sends_message_client(bot: list, user_id: int | str, moniker: str, platform: str,
                 percentages: int , skipped_blocks_allowed: int, time_to_jail: int, missed_blocks_counter_new: int):
 
                 if not missed_blocks_counter_new:
@@ -43,14 +43,14 @@ async def sends_message_client(bot: list, user_id: int | str, moniker: str,
                     return
                     
                 elif percentages > (skipped_blocks_allowed * 0.7):
-                    await bot.send_message(user_id, f"<b>Moniker: {moniker}.</b>"
+                    await bot.send_message(user_id, f"<b>Platform: {platform} ({moniker}).</b>"
                                         f"\nbot: <b>If you don't fix it, your validator will go to jail.</b>"
                                         f"\n    missed_blocks: {percentages}/{skipped_blocks_allowed}"
                                         f"\n    time_before_jail: { two_zero( math.floor(time_to_jail / 60) ) }:{ two_zero( time_to_jail % 60 ) }"
                                         )
 
                 else:
-                    await bot.send_message(user_id, f"<b>Moniker: {moniker}.</b>"
+                    await bot.send_message(user_id, f"<b>Platform: {platform} ({moniker}).</b>"
                                         f"\nbot: "
                                         f"\n.   missed_blocks: {percentages}/{skipped_blocks_allowed}"
                                         f"\n    time_before_jail: { two_zero( math.floor(time_to_jail / 60) ) }:{ two_zero( time_to_jail % 60 ) }")
@@ -73,8 +73,8 @@ async def add_user_checker(bot: Bot, mint_scanner: MintScanner, #user_id: int, p
         right_blocks = await check_block(new - old, new)
         logging.debug(f"right_blocks {right_blocks}")
         if right_blocks:
-            old = checkers.get('validators')[str(user_id)][moniker]['last_check']
-            rizn = new - old
+            # old = checkers.get('validators')[str(user_id)][moniker]['last_check']
+            # rizn = new - old
             vidsot_skip_blok = (100 * new) / skipped_blocks_allowed
             vidsot_time_to_jail = (
                 ((100 - vidsot_skip_blok) * time_jail) / 100) / 60
@@ -139,7 +139,7 @@ async def add_user_checker(bot: Bot, mint_scanner: MintScanner, #user_id: int, p
                     missed_blocks_counter_new = int(data_new['missed_blocks_counter']['missed_blocks_counter'])
 
                     missed_blocks_counter_new, percentages, time_to_jail = await check( missed_blocks_counter, missed_blocks_counter_new, skipped_blocks_allowed, time_jail)
-                    await sends_message_client(bot, user_id, moniker, percentages, skipped_blocks_allowed, time_to_jail, missed_blocks_counter_new)
+                    await sends_message_client(bot, user_id, moniker, chain, percentages, skipped_blocks_allowed, time_to_jail, missed_blocks_counter_new)
 
                     logging.debug(f" old_rezult {type(missed_blocks_counter)} , new_rezult {type(missed_blocks_counter_new)}")
                     logging.info(f'{data_new}')
@@ -160,13 +160,14 @@ async def add_user_checker(bot: Bot, mint_scanner: MintScanner, #user_id: int, p
                                                 all_cons_validators_one['missed_blocks_counters'])
 
                     cons_val_one = int(all_cons_validators_one['missed_blocks_counters'][index].get('missed_blocks_counter'))
-                    #cons_val_one = 130
+                    # cons_val_one = 0
 
                     cons_val_two = int(all_cons_validators_second['missed_blocks_counters'][index].get('missed_blocks_counter'))
+                    # cons_val_two= 32
 
                     missed_blocks_counter_new, percentages, time_to_jail = await check( cons_val_one, cons_val_two, skipped_blocks_allowed, time_jail )
 
-                    await sends_message_client(bot, user_id, moniker, percentages, skipped_blocks_allowed, time_to_jail, missed_blocks_counter_new)
+                    await sends_message_client(bot, user_id, moniker, chain, percentages, skipped_blocks_allowed, time_to_jail, missed_blocks_counter_new)
                     
                     logging.debug(f"const: {checkers['validators'][network][chain][str(user_id)][moniker]['addr_cons']}")
                     logging.info(f"index cons_validators: {index}")

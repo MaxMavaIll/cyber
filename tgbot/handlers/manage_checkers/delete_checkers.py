@@ -129,11 +129,16 @@ async def enter_operator_address(callback: CallbackQuery, state: FSMContext,
     
     validators = num_data(validators, validators.keys())
     
-
-    await callback.message.edit_text(
-        f'Okay, I deleted this checker : {moniker}',
-        reply_markup=to_menu(back=True, text='delete again', back_to='delete_chain&back')
-    )
+    if data['copy_validators'][data['network']][chian][str(callback.from_user.id)] != []:
+        await callback.message.edit_text(
+            f'Okay, I deleted this checker : {moniker}',
+            reply_markup=to_menu(back=True, text='delete again', back_to='delete_chain&back')
+        )
+    elif data['copy_validators'][data['network']][chian][str(callback.from_user.id)] == []:
+        await callback.message.edit_text(
+            f'Okay, I deleted this checker : {moniker}',
+            reply_markup=to_menu()
+        )
     # scheduler.remove_job(
     #     job_id=f'{callback.from_user.id}:{name_node}:{moniker}'
     # )
