@@ -19,7 +19,7 @@ from api.requests import MintScanner
 from schedulers.jobs import add_user_checker
 from tgbot.handlers.manage_checkers.router import checker_router
 from tgbot.misc.states import CreateChecker
-from tgbot.keyboards.inline import menu, to_menu, list_validators
+from tgbot.keyboards.inline import menu, to_menu, list_validators, list_validators_back
 
 
 @checker_router.callback_query(text="create")
@@ -37,8 +37,11 @@ async def change_chain(callback : CallbackQuery, state: FSMContext, bot: Bot):
     
     
     network = callback.data.split("&")[-1]
-    await state.update_data(network=network)
     data = await state.get_data()
+    if network == 'back':
+        network = data["network"]
+    else:
+        await state.update_data(network=network)
 
     logging.info(f'Chains {chains.keys()}')
     
@@ -46,7 +49,9 @@ async def change_chain(callback : CallbackQuery, state: FSMContext, bot: Bot):
         await  bot.edit_message_text("Please select a chain",
                                 chat_id=callback.from_user.id,
                                 message_id=data['id_message'],
-                                reply_markup=list_validators(list(chains[network].keys()), 'chain'))
+                                reply_markup=list_validators_back(list(chains[network].keys()), 'chain', 'create' )
+                                #reply_markup=list_validators(list(chains[network].keys()), 'chain'))
+                                )
     else:
         await  bot.edit_message_text(f"There are currently no <b>{network} networks</b> available",
                                 chat_id=callback.from_user.id,
@@ -58,15 +63,18 @@ async def create_checker(callback : CallbackQuery, state: FSMContext, bot: Bot):
     """Entry point for create checker conversation"""
     
     chain = callback.data.split("&")[-1]
-    await state.update_data(chain=chain)
     data = await state.get_data()
-
+    if chain == 'back':
+        chain = data["chain"]
+    else:
+        await state.update_data(chain=chain)
     
     await bot.edit_message_text(
         'Let\'s see...\n'
         'What\'s your validator name?',
         chat_id=callback.from_user.id,
-        message_id=data['id_message']
+        message_id=data['id_message'],
+        reply_markup=to_menu(back=True, text='Try another platform', back_to='network&back')
     )
 
     await state.set_state(CreateChecker.operator_address)
@@ -101,7 +109,7 @@ async def enter_operator_address(message : Message, state: FSMContext,
             'Sorry, but I don\'t found this validator',
             chat_id=message.from_user.id,
             message_id=id_message,
-            reply_markup=to_menu()
+            reply_markup=to_menu(back=True, text='Try again', back_to='chain&back')
         )
         await state.set_state(None)
     else: 
@@ -114,7 +122,7 @@ async def enter_operator_address(message : Message, state: FSMContext,
                 await bot.edit_message_text(
                     'You already have this validator in your list', chat_id=message.from_user.id,
                     message_id=id_message,
-                    reply_markup=to_menu()
+                    reply_markup=to_menu(back=True, text='Try again', back_to='chain&back')
                 )
                 
                 return
@@ -166,7 +174,7 @@ async def enter_operator_address(message : Message, state: FSMContext,
         await bot.edit_message_text( 
             f'Nice! Now I\'ll be checking this validator all day : {moniker}👌', chat_id=message.from_user.id,
             message_id=id_message,
-            reply_markup=to_menu()
+            reply_markup=to_menu(back=True, text='Try again', back_to='chain&back')
             )
         logging.debug(f'{checkers} {data}')
         await state.set_state(None)
