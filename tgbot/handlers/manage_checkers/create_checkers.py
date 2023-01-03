@@ -24,7 +24,7 @@ from tgbot.keyboards.inline import menu, to_menu, list_validators, list_validato
 
 @checker_router.callback_query(text="create")
 async def change_network(callback : CallbackQuery, state: FSMContext):
-    logging.info(f'Chains {chains.keys()}')
+#    logging.info(f'Chains {chains.keys()}')
     
     await state.update_data(id_message=callback.message.message_id)
     await callback.message.edit_text("Please select a network",
@@ -35,16 +35,16 @@ async def change_network(callback : CallbackQuery, state: FSMContext):
 @checker_router.callback_query(Text(text_startswith="network&"))
 async def change_chain(callback : CallbackQuery, state: FSMContext, bot: Bot):
     
-    logging.info(f'network {chains.keys()}')
+#    logging.info(f'network {chains.keys()}')
     network = callback.data.split("&")[-1]
-    logging.info(f'network {network}')
+#    logging.info(f'network {network}')
     data = await state.get_data()
     if network == 'back':
         network = data["network"]
     else:
         await state.update_data(network=network)
     n = chains[network].keys()
-    logging.info(f'Chains {chains.keys()} {n}')
+#    logging.info(f'Chains {chains.keys()} {n}')
     
     if chains[network] != {}:
         await  bot.edit_message_text("Please select a chain",
@@ -96,13 +96,13 @@ async def enter_operator_address(message : Message, state: FSMContext,
     id_message=data["id_message"]
     checkers = await storage.redis.get('checkers') or '{}'
     checkers = json.loads(checkers)
-    logging.info(f"\nchecker = {checkers} \nid_message = {id_message} \ndata {data}")
+#    logging.info(f"\nchecker = {checkers} \nid_message = {id_message} \ndata {data}")
     
     del data["id_message"]
 
     
     validators = await mint_scanner.get_validators(data['chain'])
-    logging.info(f'Got {len(validators)} validators')
+ #   logging.info(f'Got {len(validators)} validators')
 
 
     if get_index_by_moniker(moniker, validators) is None:
@@ -131,16 +131,17 @@ async def enter_operator_address(message : Message, state: FSMContext,
         logging.debug(f'Start add')
         if 'all_missed' not in checkers and 'miss_all_blocks' not in checkers:
             checkers = {'all_missed' : None, "miss_all_blocks": None}
-            logging.debug(f'all_missed {checkers}')
+#            logging.debug(f'all_missed {checkers}')
             
 
         if 'validators' not in checkers:
             checkers['validators'] = {}
-            logging.debug(f'validators {checkers}')
+#            logging.debug(f'validators {checkers}')
 
 
         if data['network'] not in checkers['validators']:
             checkers['validators'][data['network']] = {}
+
             logging.debug(f'network {checkers}')
 
         if data['chain'] not in checkers['validators'][data['network']]:
@@ -174,18 +175,17 @@ async def enter_operator_address(message : Message, state: FSMContext,
         }
 
 
-        
+
         await bot.edit_message_text( 
             f'Nice! Now I\'ll be checking this validator all day : {moniker}👌', chat_id=message.from_user.id,
             message_id=id_message,
             reply_markup=to_menu(back=True, text='Try again', back_to='chain&back')
             )
-        logging.debug(f'{checkers} {data}')
+#        logging.debug(f'{checkers} {data}')
         await state.set_state(None)
         await state.update_data(data)
         await storage.redis.set('checkers', json.dumps(checkers))
-        
-        
 
-        
+
+
 
