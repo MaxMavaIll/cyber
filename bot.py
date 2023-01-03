@@ -62,8 +62,6 @@ async def main():
 
     
     
-
-
     await on_startup(bot, config.tg_bot.admin_ids)
     scheduler.start()
     

@@ -2,7 +2,7 @@ import asyncio
 import logging, json
 from datetime import datetime
 
-from api.config import nodes, chains
+from api.config import chains
 from aiogram import Bot
 from aiogram.dispatcher.filters import Command, Text
 from aiogram.dispatcher.fsm.context import FSMContext
@@ -35,15 +35,16 @@ async def change_network(callback : CallbackQuery, state: FSMContext):
 @checker_router.callback_query(Text(text_startswith="network&"))
 async def change_chain(callback : CallbackQuery, state: FSMContext, bot: Bot):
     
-    
+    logging.info(f'network {chains.keys()}')
     network = callback.data.split("&")[-1]
+    logging.info(f'network {network}')
     data = await state.get_data()
     if network == 'back':
         network = data["network"]
     else:
         await state.update_data(network=network)
-
-    logging.info(f'Chains {chains.keys()}')
+    n = chains[network].keys()
+    logging.info(f'Chains {chains.keys()} {n}')
     
     if chains[network] != {}:
         await  bot.edit_message_text("Please select a chain",
@@ -85,7 +86,7 @@ async def create_checker(callback : CallbackQuery, state: FSMContext, bot: Bot):
 async def enter_operator_address(message : Message, state: FSMContext,
                                  scheduler: AsyncIOScheduler,
                                  mint_scanner: MintScanner, bot : Bot, storage: RedisStorage):
-    """Enter validator's name"""
+
     await asyncio.sleep(1)
     await message.delete()
     moniker = message.text
