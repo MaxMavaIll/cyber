@@ -18,8 +18,8 @@ services:
       - mint_scan
 
   mintscan_api:
-    image: "mintscan_api_<name>"
-    container_name: "mintscan_api_<name>"
+    image: "mintscan_api_juno"
+    container_name: "mintscan_api_juno"
     stop_signal: SIGINT
     build:
       context: .
@@ -32,7 +32,7 @@ services:
     env_file:
       - ".env"
     ports:
-      - "<port>:8081"
+      - "5999:8081"
     networks:
       - mint_scan
 

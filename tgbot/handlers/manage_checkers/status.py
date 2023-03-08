@@ -3,7 +3,6 @@ from datetime import datetime
 from socket import EAI_SERVICE
 import asyncio
 import json
-from termcolor import colored
 
 from name_node import name
 from aiogram.dispatcher.filters import Command, Text
